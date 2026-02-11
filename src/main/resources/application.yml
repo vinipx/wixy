@@ -7,9 +7,6 @@ spring:
       server:
         enabled: true
         name: "Wixy-MCP-Server"
-        version: "1.0.0"
-        transport: sse
-        path: /wixy/mcp
 
 wixy:
   wiremock:
@@ -28,7 +25,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,mappings
   endpoint:
     health:
       show-details: always
