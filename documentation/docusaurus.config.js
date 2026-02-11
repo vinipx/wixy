@@ -112,6 +112,11 @@ const config = {
             position: "left",
           },
           {
+            to: "/docs/mcp/overview",
+            label: "AI-Native (MCP)",
+            position: "left",
+          },
+          {
             to: "/docs/api/rest-endpoints",
             label: "API Reference",
             position: "left",
@@ -183,6 +188,7 @@ const config = {
             items: [
               { label: "Getting Started", to: "/docs/getting-started/quickstart" },
               { label: "Architecture", to: "/docs/architecture/overview" },
+              { label: "AI-Native (MCP)", to: "/docs/mcp/overview" },
               { label: "API Reference", to: "/docs/api/rest-endpoints" },
               { label: "Testing", to: "/docs/testing/overview" },
             ],

@@ -55,7 +55,7 @@ Wixy is AI-native. By integrating **Spring AI**, it exposes an MCP server over S
 - **Intelligent Debugging**: *"List all stubs and tell me why the last request to /users failed."*
 - **Automated Recording**: *"Start recording from staging, I'm going to run the login test suite now."*
 
-*Check the [MCP Guide](https://vinipx.github.io/wixy/docs/features/mcp-integration) for more details.*
+*Check the [MCP Guide](https://vinipx.github.io/wixy/docs/mcp/overview) for more details.*
 
 ---
 

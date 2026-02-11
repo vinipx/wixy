@@ -34,6 +34,18 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "AI-Native (MCP)",
+      collapsed: false,
+      items: [
+        "mcp/overview",
+        "mcp/configuration",
+        "mcp/clients",
+        "mcp/use-cases",
+        "mcp/troubleshooting",
+      ],
+    },
+    {
+      type: "category",
       label: "Configuration",
       items: [
         "configuration/profiles",

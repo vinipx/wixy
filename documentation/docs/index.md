@@ -27,6 +27,7 @@ Modern microservice architectures create complex dependency chains that make int
 | **Proxy Mode** | Forward unmatched requests to a configurable upstream |
 | **Record & Playback** | Capture traffic and auto-generate stub mappings |
 | **API-Key Security** | Optional authentication for shared environments |
+| **MCP Integration** | Control Wixy via AI agents (Claude, Cursor, etc.) |
 | **Health Monitoring** | Spring Actuator with custom WireMock health indicator |
 | **OpenAPI / Swagger** | Auto-generated interactive API documentation |
 | **Profile-Based Config** | `local`, `docker`, `cloud` profiles with env-var overrides |
@@ -64,6 +65,7 @@ Modern microservice architectures create complex dependency chains that make int
 | Language | Java | 21 (LTS) |
 | Framework | Spring Boot | 3.4.x |
 | Mock Engine | WireMock | 3.13.x (standalone) |
+| AI Protocol | Spring AI (MCP) | 1.0.0-M8 |
 | Build | Gradle | 9.x (Kotlin DSL) |
 | API Docs | SpringDoc OpenAPI | 2.x |
 | Testing | JUnit 5 + RestAssured | 186 tests (96.5% coverage) |
@@ -74,6 +76,7 @@ Modern microservice architectures create complex dependency chains that make int
 
 - **[Getting Started →](/docs/getting-started/quickstart)** — Install and run WIXY in under a minute
 - **[Architecture →](/docs/architecture/overview)** — Understand the design decisions and component layout
+- **[AI-Native (MCP) →](/docs/mcp/overview)** — Connect AI agents to manage your proxy
 - **[API Reference →](/docs/api/rest-endpoints)** — Complete REST API documentation
 - **[Testing →](/docs/testing/overview)** — Unit tests, integration tests, and coverage strategy
 - **[Running Locally →](/docs/testing/running-locally)** — Run and test WIXY on your machine

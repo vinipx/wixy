@@ -64,6 +64,13 @@ const capabilityFeatures = [
       'Optional API-key header authentication for shared and cloud environments. Health and OpenAPI endpoints remain publicly accessible.',
   },
   {
+    badge: 'AI-NATIVE',
+    color: '#06b6d4',
+    title: 'MCP Integration',
+    description:
+      'Native support for Model Context Protocol. Control your proxy, manage stubs, and record traffic using natural language via AI agents like Claude.',
+  },
+  {
     badge: 'TEST',
     color: '#ef4444',
     title: '186 Tests · 96.5% Coverage',
@@ -96,6 +103,12 @@ const coreFeatures = [
     title: 'Health & Actuator',
     description:
       'Custom WireMock health indicator integrated with Spring Boot Actuator. Real-time stub count, port status, and recording state.',
+  },
+  {
+    icon: '🤖',
+    title: 'AI-Native (MCP)',
+    description:
+      'Native support for Model Context Protocol. Connect your favorite AI agents directly to WIXY to manage your proxy using natural language.',
   },
   {
     icon: '🔧',
