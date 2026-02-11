@@ -1,0 +1,14 @@
+# Local development profile
+wixy:
+  wiremock:
+    port: 9090
+    verbose: true
+  proxy:
+    enabled: false
+  security:
+    enabled: false
+
+logging:
+  level:
+    io.github.vinipx.wixy: DEBUG
+    org.wiremock: DEBUG

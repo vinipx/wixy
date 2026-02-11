@@ -1,0 +1,29 @@
+# Integration test profile with security enabled
+server:
+  port: 0
+
+wixy:
+  wiremock:
+    port: 0
+    verbose: false
+  proxy:
+    enabled: false
+    target-url: ""
+    record: false
+  security:
+    enabled: true
+    api-key: "integration-test-key-99999"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    io.github.vinipx.wixy: INFO
+    org.wiremock: WARN

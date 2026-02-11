@@ -1,0 +1,18 @@
+# Cloud profile — structured JSON logging, security ON by default
+wixy:
+  wiremock:
+    port: 9090
+    verbose: false
+  proxy:
+    enabled: ${WIXY_PROXY_ENABLED:false}
+    target-url: ${WIXY_PROXY_TARGET_URL:}
+    record: ${WIXY_PROXY_RECORD:false}
+  security:
+    enabled: ${WIXY_SECURITY_ENABLED:true}
+    api-key: ${WIXY_SECURITY_API_KEY:}
+
+logging:
+  level:
+    io.github.vinipx.wixy: INFO
+  pattern:
+    console: '{"timestamp":"%d{ISO8601}","level":"%p","logger":"%logger","message":"%m"}%n'

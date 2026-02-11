@@ -1,0 +1,79 @@
+# ============================================
+# Wixy - Git Ignore
+# ============================================
+
+# --- Gradle ---
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# --- Java ---
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# --- Eclipse ---
+.classpath
+.project
+.settings/
+
+# --- VS Code ---
+.vscode/
+
+# --- CodeMie (JetBrains AI) ---
+.codemie/
+
+# --- macOS ---
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Windows ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Linux ---
+*~
+
+# --- Logs ---
+*.log
+spring.log
+logs/
+
+# --- WireMock runtime data ---
+# Recorded stubs and files generated at runtime (not the bundled samples)
+wiremock/
+mappings/
+__files/
+
+# --- Docker ---
+.docker/
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Test reports (regenerated on build) ---
+build/reports/
+build/test-results/
+
+# --- Documentation server runtime files ---
+.docs-server.pid
+.docs-server.log
+.docs-server.addr

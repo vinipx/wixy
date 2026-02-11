@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+wixy:
+  wiremock:
+    port: 9090
+    verbose: true
+    root-dir: classpath:/wiremock
+  proxy:
+    enabled: false
+    target-url: ""
+    record: false
+  security:
+    enabled: false
+    api-key: ""
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    io.github.vinipx.wixy: INFO
+    org.wiremock: INFO

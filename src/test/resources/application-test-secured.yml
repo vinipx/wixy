@@ -1,0 +1,20 @@
+# Test profile with security enabled — used by SecurityConfig tests
+server:
+  port: 0
+
+wixy:
+  wiremock:
+    port: 0
+    verbose: false
+  proxy:
+    enabled: false
+    target-url: ""
+    record: false
+  security:
+    enabled: true
+    api-key: "test-secret-key-12345"
+
+logging:
+  level:
+    io.github.vinipx.wixy: WARN
+    org.wiremock: WARN

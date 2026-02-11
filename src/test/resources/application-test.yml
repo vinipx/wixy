@@ -1,0 +1,31 @@
+# Test profile — isolated ports, security off, minimal logging
+server:
+  port: 0  # random port for Spring
+
+wixy:
+  wiremock:
+    port: 0  # random port for WireMock
+    verbose: false
+    root-dir: classpath:/wiremock
+  proxy:
+    enabled: false
+    target-url: ""
+    record: false
+  security:
+    enabled: false
+    api-key: ""
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    io.github.vinipx.wixy: WARN
+    org.wiremock: WARN
+    org.springframework: WARN
