@@ -1,6 +1,16 @@
 server:
   port: 8080
 
+spring:
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: "Wixy-MCP-Server"
+        version: "1.0.0"
+        transport: sse
+        path: /wixy/mcp
+
 wixy:
   wiremock:
     port: 9090

@@ -23,6 +23,7 @@
 - **Stub Management** — Full CRUD REST API for creating/managing HTTP stubs
 - **Proxy Mode** — Forward unmatched requests to a configurable upstream
 - **Record & Playback** — Capture real traffic and replay it later
+- **MCP Integration** — Control Wixy using AI agents via Model Context Protocol
 - **Profile-based Config** — `local`, `docker`, `cloud` profiles with env-var overrides
 - **Health Checks** — Spring Actuator with WireMock status details
 - **Optional Security** — API-key header authentication for shared/cloud environments

@@ -16,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
@@ -27,6 +28,9 @@ dependencies {
 
     // WireMock
     implementation("org.wiremock:wiremock-standalone:3.13.0")
+
+    // Spring AI MCP
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:1.0.0-M8")
 
     // OpenAPI / Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
