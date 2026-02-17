@@ -17,7 +17,6 @@ const Dashboard: React.FC = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Add cache busting timestamp
       const [proxy, rec, stubsRes] = await Promise.all([
         engineApi.getProxyStatus(),
         engineApi.getRecordingStatus(),
@@ -26,11 +25,6 @@ const Dashboard: React.FC = () => {
       setProxyStatus(proxy.data);
       setRecordingStatus(rec.data.status);
       setStubs(stubsRes.data.mappings || []);
-      
-      // Only set target URL if it's not already set to avoid overwriting user input while they type
-      if (!targetUrl && proxy.data.targetUrl) {
-        setTargetUrl(proxy.data.targetUrl);
-      }
     } catch (err: unknown) {
       console.error('Failed to fetch dashboard data', err);
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -38,11 +32,19 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [targetUrl]);
+  }, []);
 
+  // Initial load of engine status
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Load targetUrl only once when proxyStatus is first available
+  useEffect(() => {
+    if (proxyStatus?.targetUrl && !targetUrl) {
+      setTargetUrl(proxyStatus.targetUrl);
+    }
+  }, [proxyStatus, targetUrl]);
 
   const handleToggleProxy = async () => {
     try {

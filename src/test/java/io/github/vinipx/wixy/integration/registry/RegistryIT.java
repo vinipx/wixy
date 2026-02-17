@@ -2,9 +2,8 @@ package io.github.vinipx.wixy.integration.registry;
 
 import io.github.vinipx.wixy.integration.BaseIntegrationTest;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import org.junit.jupiter.api.*;
 
 import java.util.Map;
 
@@ -14,6 +13,20 @@ import static org.hamcrest.Matchers.*;
 @Tag("integration")
 @DisplayName("Registry Management API")
 class RegistryIT extends BaseIntegrationTest {
+
+    private static WireMockServer dummyRemote;
+    private static final int DUMMY_PORT = 9920;
+
+    @BeforeAll
+    static void startDummy() {
+        dummyRemote = new WireMockServer(DUMMY_PORT);
+        dummyRemote.start();
+    }
+
+    @AfterAll
+    static void stopDummy() {
+        if (dummyRemote != null) dummyRemote.stop();
+    }
 
     @Test
     @DisplayName("GET /wixy/admin/registry/servers should return list with local server")
@@ -30,10 +43,10 @@ class RegistryIT extends BaseIntegrationTest {
     @Test
     @DisplayName("Full registry workflow: add → switch → list → remove")
     void registryWorkflow() {
-        // 1. Add a remote server
+        // 1. Add a remote server (the one we just started)
         String body = given()
                 .contentType(ContentType.JSON)
-                .body(Map.of("name", "Integration Test Remote", "url", "http://localhost:9999"))
+                .body(Map.of("name", "Integration Test Remote", "url", "http://localhost:" + DUMMY_PORT))
                 .post("/wixy/admin/registry/servers")
                 .then()
                 .statusCode(201)

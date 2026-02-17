@@ -72,4 +72,9 @@ public interface WireMockEngine {
      * Get the port the server is listening on.
      */
     int getPort();
+
+    /**
+     * Simple lightweight call to verify the engine is reachable.
+     */
+    void ping();
 }

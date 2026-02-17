@@ -1,13 +1,25 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { registryApi } from '../api';
+import { registryApi, engineApi } from '../api';
 import type { ManagedServer } from '../types';
-import { Plus, Trash2, CheckCircle2, Globe, Cpu } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Globe, Cpu, RefreshCw } from 'lucide-react';
 
 const Registry: React.FC = () => {
   const [servers, setServers] = useState<ManagedServer[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newServer, setNewServer] = useState({ name: '', url: '' });
+  const [serverStatus, setServerStatus] = useState<Record<string, 'online' | 'offline' | 'checking' | 'unknown'>>({});
+
+  const checkReachability = useCallback(async (server: ManagedServer) => {
+    const id = server.id || 'local';
+    setServerStatus(prev => ({ ...prev, [id]: 'checking' }));
+    try {
+      await engineApi.listStubs({ headers: { 'X-Wixy-Target-Server': server.id || 'local' } });
+      setServerStatus(prev => ({ ...prev, [id]: 'online' }));
+    } catch {
+      setServerStatus(prev => ({ ...prev, [id]: 'offline' }));
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -17,10 +29,15 @@ const Registry: React.FC = () => {
       ]);
       setServers(serversRes.data);
       setActiveId(activeRes.data.activeServerId === 'local' ? null : activeRes.data.activeServerId);
+      
+      // Auto-check reachability for all servers
+      serversRes.data.forEach((server: ManagedServer) => {
+        void checkReachability(server);
+      });
     } catch (err: unknown) {
       console.error('Failed to fetch registry data', err);
     }
-  }, []);
+  }, [checkReachability]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -134,16 +151,31 @@ const Registry: React.FC = () => {
 
               <div className="flex items-center justify-between mt-auto">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`} />
-                  <span className={`text-xs font-bold uppercase tracking-tighter ${isActive ? 'text-green-500' : 'text-gray-500'}`}>
-                    {isActive ? 'Active' : 'Standby'}
+                  {serverStatus[server.id || 'local'] === 'checking' ? (
+                    <RefreshCw className="w-3 h-3 text-gray-500 animate-spin" />
+                  ) : (
+                    <div className={`w-2 h-2 rounded-full ${
+                      serverStatus[server.id || 'local'] === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
+                      serverStatus[server.id || 'local'] === 'offline' ? 'bg-red-500' : 'bg-gray-600'
+                    }`} />
+                  )}
+                  <span className={`text-[10px] font-black uppercase tracking-tighter ${
+                    serverStatus[server.id || 'local'] === 'online' ? 'text-green-500' : 
+                    serverStatus[server.id || 'local'] === 'offline' ? 'text-red-500' : 'text-gray-500'
+                  }`}>
+                    {serverStatus[server.id || 'local'] === 'online' ? 'Online' : 
+                     serverStatus[server.id || 'local'] === 'offline' ? 'Unreachable' : 
+                     serverStatus[server.id || 'local'] === 'checking' ? 'Checking...' : 'Standby'}
                   </span>
                 </div>
                 
                 {!isActive && (
                   <button 
+                    disabled={serverStatus[server.id || 'local'] === 'offline'}
                     onClick={() => handleSetActive(server.id)}
-                    className="text-xs font-bold text-wixy-cyan hover:text-cyan-300 uppercase tracking-widest transition-colors"
+                    className={`text-xs font-bold uppercase tracking-widest transition-colors ${
+                      serverStatus[server.id || 'local'] === 'offline' ? 'text-gray-700 cursor-not-allowed' : 'text-wixy-cyan hover:text-cyan-300'
+                    }`}
                   >
                     Switch To →
                   </button>

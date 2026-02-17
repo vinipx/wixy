@@ -14,6 +14,8 @@ wixy:
   security:
     enabled: false
     api-key: ""
+  registry:
+    file-path: ${java.io.tmpdir}/wixy-test-servers.json
 
 management:
   endpoints:

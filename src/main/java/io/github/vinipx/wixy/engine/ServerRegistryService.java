@@ -77,10 +77,22 @@ public class ServerRegistryService {
                     .findFirst();
             
             if (server.isPresent()) {
-                engineManager.switchToRemote(id, server.get().getUrl());
+                String url = server.get().getUrl();
+                validateReachability(url);
+                engineManager.switchToRemote(id, url);
             } else {
                 throw new IllegalArgumentException("Server not found in registry: " + id);
             }
+        }
+    }
+
+    private void validateReachability(String url) {
+        try {
+            log.debug("Validating reachability for: {}", url);
+            engineManager.getEngineForUrl(url).ping();
+        } catch (Exception e) {
+            log.error("Target server is unreachable: {}", url, e);
+            throw new RuntimeException("Target WireMock server at " + url + " is unreachable or returned an error. Make sure it is running.");
         }
     }
 

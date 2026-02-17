@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import type { ManagedServer, ProxyStatus, StubMapping, RecordingStatus } from '../types';
 
 const api = axios.create({
@@ -17,22 +18,22 @@ api.interceptors.request.use((config) => {
 });
 
 export const registryApi = {
-  listServers: () => api.get<ManagedServer[]>('/wixy/admin/registry/servers'),
-  addServer: (server: Partial<ManagedServer>) => api.post<ManagedServer>('/wixy/admin/registry/servers', server),
-  removeServer: (id: string) => api.delete(`/wixy/admin/registry/servers/${id}`),
-  setActive: (id: string | null) => api.post<{ status: string; activeServerId: string }>('/wixy/admin/registry/active', { id: id === 'local' ? null : id }),
-  getActive: () => api.get<{ activeServerId: string }>('/wixy/admin/registry/active'),
+  listServers: (config?: AxiosRequestConfig) => api.get<ManagedServer[]>('/wixy/admin/registry/servers', config),
+  addServer: (server: Partial<ManagedServer>, config?: AxiosRequestConfig) => api.post<ManagedServer>('/wixy/admin/registry/servers', server, config),
+  removeServer: (id: string, config?: AxiosRequestConfig) => api.delete(`/wixy/admin/registry/servers/${id}`, config),
+  setActive: (id: string | null, config?: AxiosRequestConfig) => api.post<{ status: string; activeServerId: string }>('/wixy/admin/registry/active', { id: id === 'local' ? null : id }, config),
+  getActive: (config?: AxiosRequestConfig) => api.get<{ activeServerId: string }>('/wixy/admin/registry/active', config),
 };
 
 export const engineApi = {
-  getProxyStatus: () => api.get<ProxyStatus>('/wixy/admin/proxy'),
-  enableProxy: (targetUrl: string) => api.post<{ status: string; targetUrl: string }>('/wixy/admin/proxy/enable', { targetUrl }),
-  disableProxy: () => api.post<{ status: string }>('/wixy/admin/proxy/disable'),
-  listStubs: () => api.get<{ mappings: StubMapping[]; meta: { total: number } }>('/wixy/admin/mappings'),
-  deleteStub: (id: string) => api.delete(`/wixy/admin/mappings/${id}`),
-  getRecordingStatus: () => api.get<RecordingStatus>('/wixy/admin/recordings/status'),
-  startRecording: (targetUrl?: string) => api.post<{ status: string }>('/wixy/admin/recordings/start', { targetUrl }),
-  stopRecording: () => api.post<{ status: string; capturedStubs: number }>('/wixy/admin/recordings/stop'),
+  getProxyStatus: (config?: AxiosRequestConfig) => api.get<ProxyStatus>('/wixy/admin/proxy', config),
+  enableProxy: (targetUrl: string, config?: AxiosRequestConfig) => api.post<{ status: string; targetUrl: string }>('/wixy/admin/proxy/enable', { targetUrl }, config),
+  disableProxy: (config?: AxiosRequestConfig) => api.post<{ status: string }>('/wixy/admin/proxy/disable', config),
+  listStubs: (config?: AxiosRequestConfig) => api.get<{ mappings: StubMapping[]; meta: { total: number } }>('/wixy/admin/mappings', config),
+  deleteStub: (id: string, config?: AxiosRequestConfig) => api.delete(`/wixy/admin/mappings/${id}`, config),
+  getRecordingStatus: (config?: AxiosRequestConfig) => api.get<RecordingStatus>('/wixy/admin/recordings/status', config),
+  startRecording: (targetUrl?: string, config?: AxiosRequestConfig) => api.post<{ status: string }>('/wixy/admin/recordings/start', { targetUrl }, config),
+  stopRecording: (config?: AxiosRequestConfig) => api.post<{ status: string; capturedStubs: number }>('/wixy/admin/recordings/stop', config),
 };
 
 export default api;

@@ -65,6 +65,10 @@ class ServerRegistryServiceTest {
         ManagedServer remote = new ManagedServer(UUID.randomUUID(), "Remote", "http://remote:80", ManagedServer.ServerType.REMOTE);
         service.addServer(remote);
         
+        // Mock reachability check
+        io.github.vinipx.wixy.engine.WireMockEngine mockEngine = mock(io.github.vinipx.wixy.engine.WireMockEngine.class);
+        when(engineManager.getEngineForUrl("http://remote:80")).thenReturn(mockEngine);
+        
         service.setActiveServer(remote.getId());
         verify(engineManager).switchToRemote(eq(remote.getId()), eq("http://remote:80"));
         

@@ -13,6 +13,8 @@ wixy:
   security:
     enabled: true
     api-key: "integration-test-key-99999"
+  registry:
+    file-path: ${java.io.tmpdir}/wixy-test-servers-secured.json
 
 management:
   endpoints:

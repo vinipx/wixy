@@ -86,4 +86,11 @@ public class LocalWireMockEngine implements WireMockEngine {
     public int getPort() {
         return wireMockServer.port();
     }
+
+    @Override
+    public void ping() {
+        if (!wireMockServer.isRunning()) {
+            throw new IllegalStateException("Local WireMock server is not running");
+        }
+    }
 }

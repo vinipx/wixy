@@ -87,4 +87,10 @@ public class RemoteWireMockEngine implements WireMockEngine {
     public int getPort() {
         return port;
     }
+
+    @Override
+    public void ping() {
+        // A simple lightweight call to verify connection
+        client.allStubMappings();
+    }
 }
