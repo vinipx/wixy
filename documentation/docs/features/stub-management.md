@@ -1,52 +1,48 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 title: Stub Management
 ---
 
 # Stub Management
 
-WIXY provides a full REST API for creating, reading, updating, and deleting HTTP stubs at runtime. Stubs define how WireMock responds to specific request patterns.
+WIXY Hub provides a unified interface for creating, reading, updating, and deleting HTTP stubs. You can manage stubs through the **modern Web Dashboard**, the **REST API**, or using **AI agents via MCP**.
 
 ## How Stubs Work
 
-A **stub mapping** consists of two parts:
+A **stub mapping** defines how a WireMock engine responds to specific requests. It consists of:
+1. **Request matcher** — Method, URL pattern, headers, and/or body.
+2. **Response definition** — Status code, headers, and body to return.
 
-1. **Request matcher** — Defines the HTTP method, URL pattern, headers, and/or body that a request must match
-2. **Response definition** — Defines the status code, headers, and body to return
+Operations are performed on the Hub's current **Active Engine** unless specified otherwise via headers.
 
-When WireMock receives a request on port `9090`, it checks all active stubs for a match. The first match wins and its response is returned.
+---
 
-## Pre-Packaged Stubs
+## 🖥️ Dashboard Management
 
-WIXY ships with sample stubs in `src/main/resources/wiremock/mappings/`. These load automatically on startup:
+The WIXY Hub Dashboard provides a user-friendly way to manage stubs without writing code.
 
-```json title="src/main/resources/wiremock/mappings/sample-stub.json"
-{
-  "request": {
-    "method": "GET",
-    "urlPath": "/api/sample"
-  },
-  "response": {
-    "status": 200,
-    "headers": {
-      "Content-Type": "application/json"
-    },
-    "jsonBody": {
-      "message": "Hello from Wixy!",
-      "source": "pre-packaged stub"
-    }
-  }
-}
-```
+### The Stub List
+Navigate to the **Dashboard** tab to see all active mappings on the selected engine. 
+- **Method Badges**: Quickly identify GET, POST, or other request types.
+- **URL Tooltips**: Hover over URLs to see the full path matcher.
+- **Priority Indicators**: See which stubs will match first.
 
-:::tip
-Place your own `.json` files in the `wiremock/mappings/` directory to pre-load stubs on every startup.
-:::
+### Create & Edit (Stub Editor)
+Click **+ Create Stub** or the **Edit icon** on an existing row to open the Stub Editor.
+- **JSON Editor**: A spacious, scrollable code editor for defining WireMock mappings.
+- **Live Validation**: The Hub validates your JSON schema in real-time before saving.
+- **Documentation Link**: Quick access to the official WireMock stubbing guide directly from the editor.
 
-## Creating Stubs via API
+### View Details
+Click the **External Link icon** to open a **Read-Only view** of any stub. This is perfect for inspecting complex mappings without risking accidental changes.
 
-### Simple GET Stub
+---
 
+## 🛠️ API Management
+
+For automation and power users, the Hub exposes a full REST API.
+
+### Creating a Stub
 ```bash
 curl -X POST http://localhost:8080/wixy/admin/mappings \
   -H "Content-Type: application/json" \
@@ -57,178 +53,45 @@ curl -X POST http://localhost:8080/wixy/admin/mappings \
     },
     "response": {
       "status": 200,
-      "jsonBody": {
-        "id": 1,
-        "name": "Jane Doe",
-        "email": "jane@example.com"
-      },
-      "headers": {
-        "Content-Type": "application/json"
-      }
+      "jsonBody": { "id": 1, "name": "Jane Doe" },
+      "headers": { "Content-Type": "application/json" }
     }
   }'
 ```
 
-### POST Stub with Request Body Matching
-
-```bash
-curl -X POST http://localhost:8080/wixy/admin/mappings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "POST",
-      "urlPath": "/api/orders",
-      "bodyPatterns": [
-        { "matchesJsonPath": "$.productId" }
-      ]
-    },
-    "response": {
-      "status": 201,
-      "jsonBody": {
-        "orderId": "ORD-12345",
-        "status": "CREATED"
-      },
-      "headers": {
-        "Content-Type": "application/json"
-      }
-    }
-  }'
-```
-
-### Stub with URL Pattern Matching
-
-```bash
-curl -X POST http://localhost:8080/wixy/admin/mappings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "GET",
-      "urlPathPattern": "/api/products/[0-9]+"
-    },
-    "response": {
-      "status": 200,
-      "jsonBody": {
-        "id": 999,
-        "name": "Generic Product"
-      },
-      "headers": {
-        "Content-Type": "application/json"
-      }
-    }
-  }'
-```
-
-### Stub with Delay (Simulating Latency)
-
-```bash
-curl -X POST http://localhost:8080/wixy/admin/mappings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "GET",
-      "urlPath": "/api/slow-endpoint"
-    },
-    "response": {
-      "status": 200,
-      "jsonBody": { "message": "Delayed response" },
-      "fixedDelayMilliseconds": 3000
-    }
-  }'
-```
-
-### Stub Returning Error Status
-
-```bash
-curl -X POST http://localhost:8080/wixy/admin/mappings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "GET",
-      "urlPath": "/api/failing-service"
-    },
-    "response": {
-      "status": 503,
-      "jsonBody": {
-        "error": "Service Unavailable",
-        "message": "Dependency is down"
-      }
-    }
-  }'
-```
-
-## Listing Stubs
-
-```bash
-curl http://localhost:8080/wixy/admin/mappings
-```
-
-**Response:**
-
-```json
-{
-  "mappings": ["..."],
-  "meta": {
-    "total": 3
-  }
-}
-```
-
-## Getting a Stub by ID
-
-```bash
-curl http://localhost:8080/wixy/admin/mappings/{uuid}
-```
-
-## Updating a Stub
-
+### Updating a Stub
 ```bash
 curl -X PUT http://localhost:8080/wixy/admin/mappings/{uuid} \
   -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "GET",
-      "urlPath": "/api/users/1"
-    },
-    "response": {
-      "status": 200,
-      "jsonBody": { "id": 1, "name": "Updated Name" }
-    }
-  }'
+  -d '{ ... updated json ... }'
 ```
 
-## Deleting a Stub
-
+### Deleting a Stub
 ```bash
-# Delete a specific stub
+# Delete specific
 curl -X DELETE http://localhost:8080/wixy/admin/mappings/{uuid}
 
-# Reset ALL stubs
+# Reset ALL stubs on active engine
 curl -X POST http://localhost:8080/wixy/admin/mappings/reset
 ```
 
-## Bulk Import
+---
 
-Import multiple stubs at once using WireMock's import format:
+## 📁 Pre-Packaged Stubs
 
-```bash
-curl -X POST http://localhost:8080/wixy/admin/mappings/import \
-  -H "Content-Type: application/json" \
-  -d '{
-    "request": {
-      "method": "GET",
-      "urlPath": "/api/batch-endpoint"
-    },
-    "response": {
-      "status": 200,
-      "jsonBody": { "batch": true }
-    }
-  }'
-```
+WIXY Hub supports pre-loading stubs from the filesystem. Place your `.json` files in:
+`src/main/resources/wiremock/mappings/`
+
+These stubs are automatically loaded into the **Local Embedded Engine** on startup.
+
+:::tip Multi-Server Targeting
+When using the API, you can target a specific remote server by adding the `X-Wixy-Target-Server: <server-id>` header to any of the calls above.
+:::
 
 ## Error Handling
 
-| Scenario | HTTP Status | Error |
-|----------|-------------|-------|
-| Stub not found (GET/PUT/DELETE by ID) | `404` | `StubNotFoundException` |
-| Invalid JSON in request body | `400` | `InvalidStubDefinitionException` |
-| Malformed stub definition | `400` | `InvalidStubDefinitionException` |
+| Scenario | HTTP Status | Description |
+|----------|-------------|-------------|
+| Stub not found | `404` | The UUID does not exist on the target engine. |
+| Invalid JSON | `400` | Malformed JSON or invalid WireMock schema. |
+| Engine Offline | `500` | The target remote server is unreachable. |
