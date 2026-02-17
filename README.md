@@ -1,4 +1,4 @@
-# Wixy Hub — Multi-Engine WireMock Management Plane
+# WIXY Hub — Enterprise WireMock Orchestrator
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://vinipx.github.io/wixy/)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
@@ -7,9 +7,9 @@
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-MCP-blue.svg)](https://spring.io/projects/spring-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **See Docs -> [https://vinipx.github.io/wixy/](https://vinipx.github.io/wixy/)**
+> **The Central Management Plane for your WireMock Fleet.**
 
-WIXY Hub is a professional management plane for [WireMock](https://wiremock.org/). It allows developers and QA teams to control, monitor, and orchestrate multiple WireMock instances—both local and remote—from a single modern dashboard.
+WIXY Hub is a professional, Spring Boot-based orchestrator designed to simplify service virtualisation. It allows developers and QA teams to control, monitor, and manage an entire fleet of WireMock engines—both local and remote—from a single, modern dashboard.
 
 ---
 
@@ -25,45 +25,44 @@ Requires Java 21+.
 Open your browser at **[http://localhost:8080](http://localhost:8080)**.
 
 **Port Mapping:**
-- **8080**: WIXY Hub (Management UI, Admin API, MCP)
-- **9090**: Traffic Plane (Embedded WireMock Engine)
+- **8080**: WIXY Hub (Management UI, Admin API, Self-hosted Docs, MCP)
+- **9090**: Traffic Plane (Default Embedded WireMock Engine)
 
 ---
 
-## ✨ Key Features
+## ✨ Key Capabilities
 
-- 🖥️ **Centralized Dashboard** — A modern React UI to manage your entire mock server fleet.
-- 🌐 **Remote Management** — Connect and control external WireMock servers as if they were local.
-- 🎯 **Direct Targeting** — Route requests to specific servers using the `X-Wixy-Target-Server` header.
-- 🛠️ **Stub Orchestration** — CRUD operations, bulk imports, and real-time mapping visualization.
-- 🔄 **Live Proxy Control** — Toggle proxy modes and upstream targets at runtime across any engine.
-- 🕵️ **Traffic Recorder** — Capture traffic from any registered server and save it as persistent stubs.
-- 🤖 **AI-Native (MCP)** — Control the Hub using natural language via Claude, Cursor, or specialized agents.
+- 🏢 **Fleet Orchestration** — Manage multiple WireMock instances across your infrastructure from one central Hub.
+- 🌐 **Remote Management** — Register and control external servers (Staging, QA, Cloud) as easily as local ones.
+- 🖥️ **Modern Dashboard** — A high-performance React UI for visual stub management, recording, and real-time health monitoring.
+- 🛠️ **Full Stub CRUD** — Create, edit, and update mappings using a powerful JSON editor with live validation.
+- 🎯 **Direct Targeting** — Route requests to specific engines atomically using the `X-Wixy-Target-Server` header.
+- 🕵️ **Traffic Recorder** — Capture live traffic on any engine and automatically transform it into persistent stub mappings.
+- 🤖 **AI-Native (MCP)** — Native support for Model Context Protocol. Manage your fleet using natural language via AI agents.
 
 ---
 
-## 🎯 Direct Targeting (API Power Users)
+## 🎯 Direct Targeting (Power Users)
 
-Wixy Hub supports per-request engine overrides. You can target any registered server without changing the global context:
+WIXY Hub supports per-request orchestration. You can target any registered server without changing the global "Active Engine" context:
 
 ```bash
-# Get mappings from a specific remote server via the Hub
-curl http://localhost:8080/wixy/admin/mappings \
-  -H "X-Wixy-Target-Server: <server-uuid>"
+# Register a stub on a specific remote engine via the central Hub
+curl -X POST http://localhost:8080/wixy/admin/mappings \
+  -H "X-Wixy-Target-Server: <server-uuid>" \
+  -H "Content-Type: application/json" \
+  -d '{ ... stub json ... }'
 ```
 
 ---
 
 ## 🤖 Model Context Protocol (MCP)
 
-WIXY Hub is AI-native. By integrating **Spring AI**, it exposes an MCP server over SSE, allowing AI agents to manage your entire test fleet through natural language.
+WIXY Hub is AI-native. It exposes its orchestration tools via SSE, allowing AI agents (like Claude or Cursor) to adapt your test environment on the fly.
 
 **MCP Endpoint:** `http://localhost:8080/wixy/mcp`
 
-### Example Agent Commands:
-- *"Claude, connect to the staging mock and list all stubs."*
-- *"Make the 'Auth Service' on Remote-A return a 401 for /login."*
-- *"Record the next 5 requests on the local engine and save them."*
+> *"Claude, connect to the inventory-mock and simulate a 503 error for all POST /orders requests."*
 
 ---
 
@@ -79,13 +78,13 @@ WIXY Hub is AI-native. By integrating **Spring AI**, it exposes an MCP server ov
 
 ---
 
-## 🧪 Build & Test
+## 🧪 Build & Verify
 
 ```bash
-# Full build + quality check (unit + integration + frontend)
+# Build and run all quality checks (Unit + Integration + Frontend + Docs)
 ./gradlew check
 
-# Generate coverage report
+# Generate JaCoCo coverage report
 ./gradlew jacocoTestReport
 ```
 
