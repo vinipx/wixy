@@ -147,7 +147,7 @@ tasks.register<Exec>("buildDocs") {
     if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
         commandLine("cmd", "/c", "npm", "run", "build")
     } else {
-        commandLine("sh", "-c", "npm run build")
+        commandLine("sh", "-c", "DOCS_BASE_URL=/docs/ npm run build")
     }
 }
 

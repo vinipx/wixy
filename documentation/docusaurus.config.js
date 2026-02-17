@@ -9,7 +9,7 @@ const config = {
   favicon: "img/logo.svg",
 
   url: "https://vinipx.github.io",
-  baseUrl: "/docs/",
+  baseUrl: process.env.DOCS_BASE_URL || "/docs/",
 
   organizationName: "vinipx",
   projectName: "wixy",
