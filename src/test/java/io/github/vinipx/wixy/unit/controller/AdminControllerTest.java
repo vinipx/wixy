@@ -1,5 +1,6 @@
 package io.github.vinipx.wixy.unit.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import io.github.vinipx.wixy.controller.AdminController;
 import io.github.vinipx.wixy.exception.InvalidStubDefinitionException;
@@ -23,7 +24,8 @@ import static org.mockito.Mockito.*;
 class AdminControllerTest {
 
     private final StubService stubService = mock(StubService.class);
-    private final AdminController controller = new AdminController(stubService);
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AdminController controller = new AdminController(stubService, objectMapper);
 
     @Nested @DisplayName("GET /wixy/admin/mappings") class ListAll {
         @Test @DisplayName("should return 200 with empty list when no stubs") void emptyList() {
@@ -56,7 +58,7 @@ class AdminControllerTest {
             when(stubService.create("json-input")).thenReturn(stub);
             var response = controller.create("json-input");
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-            assertThat(response.getBody()).contains("abc");
+            assertThat(response.getBody().toString()).contains("abc");
         }
         @Test @DisplayName("should propagate InvalidStubDefinitionException") void invalidInput() {
             when(stubService.create("bad")).thenThrow(new InvalidStubDefinitionException("parse error"));
@@ -70,7 +72,7 @@ class AdminControllerTest {
             when(stub.toString()).thenReturn("{\"id\":\"" + id + "\"}"); when(stubService.getById(id)).thenReturn(stub);
             var response = controller.getById(id);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).contains(id.toString());
+            assertThat(response.getBody().toString()).contains(id.toString());
         }
         @Test @DisplayName("should propagate StubNotFoundException") void notFound() {
             UUID id = UUID.randomUUID(); when(stubService.getById(id)).thenThrow(new StubNotFoundException(id.toString()));
@@ -83,7 +85,7 @@ class AdminControllerTest {
             UUID id = UUID.randomUUID(); var stub = mock(StubMapping.class);
             when(stub.toString()).thenReturn("{\"updated\":true}"); when(stubService.update(id, "json")).thenReturn(stub);
             var response = controller.update(id, "json");
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK); assertThat(response.getBody()).contains("updated");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK); assertThat(response.getBody().toString()).contains("updated");
         }
         @Test @DisplayName("should propagate StubNotFoundException for unknown ID") void notFound() {
             UUID id = UUID.randomUUID(); when(stubService.update(eq(id), any())).thenThrow(new StubNotFoundException(id.toString()));

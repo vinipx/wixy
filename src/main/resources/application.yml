@@ -20,6 +20,11 @@ wixy:
   security:
     enabled: false
     api-key: ""
+  registry:
+    persistence: file
+    file-path: ${user.home}/.wixy/servers.json
+  ui:
+    enabled: true
 
 management:
   endpoints:

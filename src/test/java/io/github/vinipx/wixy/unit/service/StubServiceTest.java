@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import io.github.vinipx.wixy.exception.InvalidStubDefinitionException;
 import io.github.vinipx.wixy.exception.StubNotFoundException;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.service.StubService;
 import org.junit.jupiter.api.*;
 
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.*;
 class StubServiceTest {
 
     private static WireMockServer wireMockServer;
+    private EngineManager engineManager;
     private StubService stubService;
 
     private static final String VALID_STUB_JSON = """
@@ -35,7 +37,11 @@ class StubServiceTest {
 
     @BeforeAll static void startServer() { wireMockServer = new WireMockServer(0); wireMockServer.start(); }
     @AfterAll static void stopServer() { if (wireMockServer != null && wireMockServer.isRunning()) wireMockServer.stop(); }
-    @BeforeEach void setUp() { wireMockServer.resetMappings(); stubService = new StubService(wireMockServer); }
+    @BeforeEach void setUp() { 
+        wireMockServer.resetMappings(); 
+        engineManager = new EngineManager(wireMockServer);
+        stubService = new StubService(engineManager); 
+    }
 
     @Nested @DisplayName("listAll()") class ListAll {
         @Test @DisplayName("should return empty list when no stubs configured") void emptyList() { assertThat(stubService.listAll()).isEmpty(); }

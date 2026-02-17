@@ -1,11 +1,13 @@
 package io.github.vinipx.wixy.integration;
 
 import io.github.vinipx.wixy.WixyApplication;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.integration.config.TestEnvironment;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,10 +23,16 @@ public abstract class BaseIntegrationTest {
     @LocalServerPort
     protected int port;
 
+    @Autowired
+    protected EngineManager engineManager;
+
     protected String baseUrl;
 
     @BeforeEach
     void setUpRestAssured() {
+        // Reset to local engine between tests
+        engineManager.switchToLocal();
+        
         baseUrl = TestEnvironment.resolveBaseUrl(port);
         RestAssured.baseURI = baseUrl;
         RestAssured.port = extractPort(baseUrl);

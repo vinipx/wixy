@@ -35,7 +35,11 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/v3/api-docs",
             "/sse",
-            "/mcp/message"
+            "/mcp/message",
+            "/assets",
+            "/index.html",
+            "/vite.svg",
+            "/favicon.ico"
     );
 
     @Bean
@@ -66,8 +70,8 @@ public class SecurityConfig {
 
             String path = request.getRequestURI();
 
-            // Allow-listed paths pass through
-            if (isAllowed(path)) {
+            // Allow-listed paths, root, and React routes (non-API) pass through
+            if (isAllowed(path) || isFrontendRoute(path)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -93,7 +97,12 @@ public class SecurityConfig {
         }
 
         private boolean isAllowed(String path) {
-            return ALLOWED_PATHS.stream().anyMatch(path::startsWith);
+            return path.equals("/") || ALLOWED_PATHS.stream().anyMatch(path::startsWith);
+        }
+
+        private boolean isFrontendRoute(String path) {
+            // Frontend routes that should not be blocked by API key
+            return !path.startsWith("/wixy/admin") && !path.startsWith("/actuator");
         }
 
         public String getExpectedApiKey() {

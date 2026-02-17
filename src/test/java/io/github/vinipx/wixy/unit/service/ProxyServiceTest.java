@@ -2,6 +2,7 @@ package io.github.vinipx.wixy.unit.service;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.github.vinipx.wixy.config.WixyProperties;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.exception.WixyException;
 import io.github.vinipx.wixy.service.ProxyService;
 import org.junit.jupiter.api.*;
@@ -13,12 +14,18 @@ import static org.assertj.core.api.Assertions.*;
 class ProxyServiceTest {
 
     private static WireMockServer wireMockServer;
+    private EngineManager engineManager;
     private WixyProperties properties;
     private ProxyService proxyService;
 
     @BeforeAll static void startServer() { wireMockServer = new WireMockServer(0); wireMockServer.start(); }
     @AfterAll static void stopServer() { if (wireMockServer != null && wireMockServer.isRunning()) wireMockServer.stop(); }
-    @BeforeEach void setUp() { wireMockServer.resetMappings(); properties = new WixyProperties(); proxyService = new ProxyService(wireMockServer, properties); }
+    @BeforeEach void setUp() { 
+        wireMockServer.resetMappings(); 
+        properties = new WixyProperties(); 
+        engineManager = new EngineManager(wireMockServer);
+        proxyService = new ProxyService(engineManager, properties); 
+    }
 
     @Nested @DisplayName("getStatus()") class GetStatus {
         @Test @DisplayName("should return default status when proxy is disabled") void defaultStatus() {

@@ -26,6 +26,14 @@ public class WixyProperties {
     @NotNull
     private Security security = new Security();
 
+    @Valid
+    @NotNull
+    private Registry registry = new Registry();
+
+    @Valid
+    @NotNull
+    private UI ui = new UI();
+
     // ── Getters / Setters ───────────────────────────────────────
 
     public Wiremock getWiremock() {
@@ -50,6 +58,22 @@ public class WixyProperties {
 
     public void setSecurity(Security security) {
         this.security = security;
+    }
+
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(Registry registry) {
+        this.registry = registry;
+    }
+
+    public UI getUi() {
+        return ui;
+    }
+
+    public void setUi(UI ui) {
+        this.ui = ui;
     }
 
     // ── Nested classes ──────────────────────────────────────────
@@ -142,6 +166,42 @@ public class WixyProperties {
 
         public void setApiKey(String apiKey) {
             this.apiKey = apiKey;
+        }
+    }
+
+    public static class Registry {
+
+        private String persistence = "file";
+
+        private String filePath = System.getProperty("user.home") + "/.wixy/servers.json";
+
+        public String getPersistence() {
+            return persistence;
+        }
+
+        public void setPersistence(String persistence) {
+            this.persistence = persistence;
+        }
+
+        public String getFilePath() {
+            return filePath;
+        }
+
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
+        }
+    }
+
+    public static class UI {
+
+        private boolean enabled = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
     }
 }

@@ -1,8 +1,8 @@
 package io.github.vinipx.wixy.service;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.github.vinipx.wixy.config.WixyProperties;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.exception.WixyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +18,11 @@ public class ProxyService {
 
     private static final Logger log = LoggerFactory.getLogger(ProxyService.class);
 
-    private final WireMockServer wireMockServer;
+    private final EngineManager engineManager;
     private final WixyProperties properties;
 
-    public ProxyService(WireMockServer wireMockServer, WixyProperties properties) {
-        this.wireMockServer = wireMockServer;
+    public ProxyService(EngineManager engineManager, WixyProperties properties) {
+        this.engineManager = engineManager;
         this.properties = properties;
     }
 
@@ -34,7 +34,7 @@ public class ProxyService {
                 "enabled", properties.getProxy().isEnabled(),
                 "targetUrl", properties.getProxy().getTargetUrl(),
                 "record", properties.getProxy().isRecord(),
-                "wiremockPort", wireMockServer.port()
+                "wiremockPort", engineManager.getActiveEngine().getPort()
         );
     }
 
@@ -48,7 +48,7 @@ public class ProxyService {
         }
 
         // Add a catch-all proxy mapping at lowest priority
-        wireMockServer.stubFor(
+        engineManager.getActiveEngine().stubFor(
                 WireMock.any(WireMock.anyUrl())
                         .atPriority(Integer.MAX_VALUE)
                         .willReturn(WireMock.aResponse().proxiedFrom(targetUrl))
@@ -65,7 +65,7 @@ public class ProxyService {
      */
     public void disableProxy() {
         // Reset all mappings and re-add any file-based ones
-        wireMockServer.resetToDefaultMappings();
+        engineManager.getActiveEngine().resetToDefaultMappings();
         properties.getProxy().setEnabled(false);
         log.info("Proxy disabled; mappings reset to defaults.");
     }

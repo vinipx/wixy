@@ -96,3 +96,32 @@ tasks.jacocoTestCoverageVerification {
 tasks.named("check") {
     dependsOn(tasks.jacocoTestCoverageVerification)
 }
+
+// ── Frontend Build ──────────────────────────────────────────────
+tasks.register<Exec>("npmInstall") {
+    group = "frontend"
+    workingDir = file("frontend")
+    commandLine = if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        listOf("cmd", "/c", "npm", "install")
+    } else {
+        listOf("npm", "install")
+    }
+}
+
+tasks.register<Exec>("buildFrontend") {
+    group = "frontend"
+    dependsOn("npmInstall")
+    workingDir = file("frontend")
+    commandLine = if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        listOf("cmd", "/c", "npm", "run", "build")
+    } else {
+        listOf("npm", "run", "build")
+    }
+}
+
+tasks.processResources {
+    dependsOn("buildFrontend")
+    from(file("frontend/dist")) {
+        into("static")
+    }
+}

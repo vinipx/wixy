@@ -1,10 +1,9 @@
 package io.github.vinipx.wixy.service;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.recording.RecordSpecBuilder;
 import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
 import io.github.vinipx.wixy.config.WixyProperties;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.exception.WixyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +19,11 @@ public class RecordingService {
 
     private static final Logger log = LoggerFactory.getLogger(RecordingService.class);
 
-    private final WireMockServer wireMockServer;
+    private final EngineManager engineManager;
     private final WixyProperties properties;
 
-    public RecordingService(WireMockServer wireMockServer, WixyProperties properties) {
-        this.wireMockServer = wireMockServer;
+    public RecordingService(EngineManager engineManager, WixyProperties properties) {
+        this.engineManager = engineManager;
         this.properties = properties;
     }
 
@@ -44,13 +43,7 @@ public class RecordingService {
         }
 
         log.info("Starting recording to: {}", effectiveTarget);
-        wireMockServer.startRecording(
-                new RecordSpecBuilder()
-                        .forTarget(effectiveTarget)
-                        .ignoreRepeatRequests()
-                        .makeStubsPersistent(true)
-                        .build()
-        );
+        engineManager.getActiveEngine().startRecording(effectiveTarget);
     }
 
     /**
@@ -58,7 +51,7 @@ public class RecordingService {
      */
     public SnapshotRecordResult stopRecording() {
         log.info("Stopping recording...");
-        SnapshotRecordResult result = wireMockServer.stopRecording();
+        SnapshotRecordResult result = engineManager.getActiveEngine().stopRecording();
         log.info("Recording stopped. Captured {} stub(s).", result.getStubMappings().size());
         return result;
     }
@@ -67,7 +60,7 @@ public class RecordingService {
      * Get the current recording status.
      */
     public Map<String, Object> getStatus() {
-        RecordingStatus status = wireMockServer.getRecordingStatus().getStatus();
+        RecordingStatus status = engineManager.getActiveEngine().getRecordingStatus();
         return Map.of(
                 "status", status.name()
         );

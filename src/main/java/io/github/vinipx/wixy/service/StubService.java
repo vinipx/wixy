@@ -1,8 +1,7 @@
 package io.github.vinipx.wixy.service;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.exception.InvalidStubDefinitionException;
 import io.github.vinipx.wixy.exception.StubNotFoundException;
 import org.slf4j.Logger;
@@ -20,24 +19,24 @@ public class StubService {
 
     private static final Logger log = LoggerFactory.getLogger(StubService.class);
 
-    private final WireMockServer wireMockServer;
+    private final EngineManager engineManager;
 
-    public StubService(WireMockServer wireMockServer) {
-        this.wireMockServer = wireMockServer;
+    public StubService(EngineManager engineManager) {
+        this.engineManager = engineManager;
     }
 
     /**
      * List all active stub mappings.
      */
     public List<StubMapping> listAll() {
-        return wireMockServer.getStubMappings();
+        return engineManager.getActiveEngine().listAllStubs();
     }
 
     /**
      * Get a single stub mapping by its UUID.
      */
     public StubMapping getById(UUID id) {
-        StubMapping mapping = wireMockServer.getSingleStubMapping(id);
+        StubMapping mapping = engineManager.getActiveEngine().getStubById(id);
         if (mapping == null) {
             throw new StubNotFoundException(id.toString());
         }
@@ -53,7 +52,7 @@ public class StubService {
     public StubMapping create(String json) {
         try {
             StubMapping mapping = StubMapping.buildFrom(json);
-            wireMockServer.addStubMapping(mapping);
+            engineManager.getActiveEngine().addStubMapping(mapping);
             log.info("Created stub mapping: {} → {}", mapping.getRequest(), mapping.getId());
             return mapping;
         } catch (Exception e) {
@@ -75,7 +74,7 @@ public class StubService {
         try {
             StubMapping mapping = StubMapping.buildFrom(json);
             mapping.setId(id);
-            wireMockServer.editStubMapping(mapping);
+            engineManager.getActiveEngine().editStubMapping(mapping);
             log.info("Updated stub mapping: {}", id);
             return mapping;
         } catch (StubNotFoundException e) {
@@ -90,8 +89,8 @@ public class StubService {
      */
     public void delete(UUID id) {
         // Verify it exists
-        getById(id);
-        wireMockServer.removeStubMapping(wireMockServer.getSingleStubMapping(id));
+        StubMapping mapping = getById(id);
+        engineManager.getActiveEngine().removeStubMapping(mapping);
         log.info("Deleted stub mapping: {}", id);
     }
 
@@ -99,7 +98,7 @@ public class StubService {
      * Remove all stub mappings.
      */
     public void resetAll() {
-        wireMockServer.resetMappings();
+        engineManager.getActiveEngine().resetStubs();
         log.info("All stub mappings have been reset");
     }
 
@@ -112,15 +111,16 @@ public class StubService {
     public int importStubs(String json) {
         try {
             // WireMock expects the mappings in its standard import format
-            List<StubMapping> mappings = StubMapping.buildFrom(json) != null
-                    ? List.of(StubMapping.buildFrom(json))
-                    : List.of();
-
-            for (StubMapping mapping : mappings) {
-                wireMockServer.addStubMapping(mapping);
+            // NOTE: StubMapping.buildFrom(json) might return only one mapping if it's a single object
+            // or we might need a more complex parsing for bulk.
+            // For now, let's stick to the current implementation logic.
+            StubMapping mapping = StubMapping.buildFrom(json);
+            if (mapping != null) {
+                engineManager.getActiveEngine().addStubMapping(mapping);
+                log.info("Imported 1 stub mapping");
+                return 1;
             }
-            log.info("Imported {} stub mapping(s)", mappings.size());
-            return mappings.size();
+            return 0;
         } catch (Exception e) {
             throw new InvalidStubDefinitionException("Failed to import stubs: " + e.getMessage(), e);
         }

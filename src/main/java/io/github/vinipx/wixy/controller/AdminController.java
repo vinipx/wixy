@@ -1,5 +1,6 @@
 package io.github.vinipx.wixy.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import io.github.vinipx.wixy.service.StubService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,40 +23,65 @@ import java.util.UUID;
 public class AdminController {
 
     private final StubService stubService;
+    private final ObjectMapper objectMapper;
 
-    public AdminController(StubService stubService) {
+    public AdminController(StubService stubService, ObjectMapper objectMapper) {
         this.stubService = stubService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all stub mappings")
     public ResponseEntity<Map<String, Object>> listAll() {
         List<StubMapping> mappings = stubService.listAll();
+        // Convert to raw maps to avoid Jackson serialization issues with WireMock types
+        List<Object> rawMappings = mappings.stream()
+                .map(m -> {
+                    try {
+                        return objectMapper.readTree(m.toString());
+                    } catch (Exception e) {
+                        return m;
+                    }
+                })
+                .toList();
+
         return ResponseEntity.ok(Map.of(
-                "mappings", mappings.stream().map(StubMapping::toString).toList(),
+                "mappings", rawMappings,
                 "meta", Map.of("total", mappings.size())
         ));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new stub mapping")
-    public ResponseEntity<String> create(@RequestBody String json) {
+    public ResponseEntity<Object> create(@RequestBody String json) {
         StubMapping created = stubService.create(json);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created.toString());
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(objectMapper.readTree(created.toString()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        }
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get a stub mapping by ID")
-    public ResponseEntity<String> getById(@PathVariable UUID id) {
+    public ResponseEntity<Object> getById(@PathVariable UUID id) {
         StubMapping mapping = stubService.getById(id);
-        return ResponseEntity.ok(mapping.toString());
+        try {
+            return ResponseEntity.ok(objectMapper.readTree(mapping.toString()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(mapping);
+        }
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a stub mapping")
-    public ResponseEntity<String> update(@PathVariable UUID id, @RequestBody String json) {
+    public ResponseEntity<Object> update(@PathVariable UUID id, @RequestBody String json) {
         StubMapping updated = stubService.update(id, json);
-        return ResponseEntity.ok(updated.toString());
+        try {
+            return ResponseEntity.ok(objectMapper.readTree(updated.toString()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(updated);
+        }
     }
 
     @DeleteMapping("/{id}")

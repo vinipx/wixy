@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
 import io.github.vinipx.wixy.config.WixyProperties;
 import io.github.vinipx.wixy.exception.WixyException;
+import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.service.RecordingService;
 import org.junit.jupiter.api.*;
 
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.*;
 class RecordingServiceTest {
 
     private static WireMockServer wireMockServer;
+    private EngineManager engineManager;
     private WixyProperties properties;
     private RecordingService recordingService;
 
@@ -25,7 +27,8 @@ class RecordingServiceTest {
         wireMockServer.resetMappings();
         try { wireMockServer.stopRecording(); } catch (Exception ignored) {}
         properties = new WixyProperties();
-        recordingService = new RecordingService(wireMockServer, properties);
+        engineManager = new EngineManager(wireMockServer);
+        recordingService = new RecordingService(engineManager, properties);
     }
 
     @Nested @DisplayName("getStatus()") class GetStatus {
