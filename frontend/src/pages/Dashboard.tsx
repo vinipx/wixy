@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { engineApi } from '../api';
 import type { ProxyStatus, StubMapping } from '../types';
+import StubEditor from '../components/StubEditor';
 import { 
   Play, Square, Radio, Shield, 
   ArrowRightLeft, FileJson, Activity, 
-  Trash2, ExternalLink, RefreshCw 
+  Trash2, ExternalLink, RefreshCw, Plus, Edit 
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -13,6 +14,10 @@ const Dashboard: React.FC = () => {
   const [stubs, setStubs] = useState<StubMapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [targetUrl, setTargetUrl] = useState('');
+  
+  // Editor State
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingStub, setEditingStub] = useState<StubMapping | undefined>(undefined);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -89,6 +94,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleCreateStub = () => {
+    setEditingStub(undefined);
+    setIsEditorOpen(true);
+  };
+
+  const handleEditStub = (stub: StubMapping) => {
+    setEditingStub(stub);
+    setIsEditorOpen(true);
+  };
+
   if (loading && !proxyStatus) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <RefreshCw className="w-8 h-8 text-wixy-cyan animate-spin" />
@@ -104,9 +119,14 @@ const Dashboard: React.FC = () => {
             Connected to active WireMock instance on port <span className="text-wixy-cyan font-mono font-bold">{proxyStatus?.wiremockPort}</span>
           </p>
         </div>
-        <button onClick={fetchData} className="wixy-button-secondary self-start md:self-center flex items-center gap-2">
-          <RefreshCw className="w-4 h-4" /> Refresh Status
-        </button>
+        <div className="flex gap-3">
+          <button onClick={fetchData} className="wixy-button-secondary self-start md:self-center flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+          <button onClick={handleCreateStub} className="wixy-button-primary self-start md:self-center flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Create Stub
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -254,12 +274,20 @@ const Dashboard: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-gray-500 hover:text-white transition-colors">
+                      <button 
+                        onClick={() => handleEditStub(stub)}
+                        className="p-2 text-gray-500 hover:text-white transition-colors"
+                        title="Edit Stub"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-gray-500 hover:text-white transition-colors" title="View Details">
                         <ExternalLink className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteStub(stub.id)}
                         className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                        title="Delete Stub"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -278,6 +306,13 @@ const Dashboard: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <StubEditor 
+        isOpen={isEditorOpen} 
+        onClose={() => setIsEditorOpen(false)} 
+        onSave={() => fetchData()}
+        initialStub={editingStub}
+      />
     </div>
   );
 };
