@@ -5,9 +5,11 @@ title: Architecture Overview
 
 # Architecture Overview
 
-WIXY Hub follows a **Management-as-an-Orchestrator** architecture. It decouples the administrative plane (Spring Boot Hub) from the traffic plane (WireMock Engines), allowing for the management of multiple environments from a single point of control.
+WIXY Hub is a **Management-as-an-Orchestrator** platform. It decouples the administrative plane (Spring Boot Hub) from the traffic plane (WireMock Engines), allowing for the centralized management of complex test environments from a single dashboard.
 
-## High-Level Architecture
+## Orchestration Logic
+
+The Hub acts as a **smart proxy** for management commands. When you create a stub or enable recording, the Hub determines which engine should receive the command based on the global **Active Engine** context or per-request headers.
 
 ```mermaid
 graph TB
@@ -16,61 +18,53 @@ graph TB
         
         subgraph UI["Management UI"]
             DB[React Dashboard]
+            SE[Stub Editor]
         end
 
-        subgraph Controllers["REST & AI Interfaces"]
+        subgraph Controllers["Orchestration Interfaces"]
             AC[Admin API]
             RE[Registry API]
-            MC[MCP Tools]
+            MC[MCP / AI Tools]
         end
         
-        subgraph Management["Core Orchestrator"]
+        subgraph Core["Management Core"]
             EM[Engine Manager]
             RS[Server Registry]
         end
     end
 
-    subgraph TrafficPlane["Traffic Plane"]
+    subgraph TrafficPlane["Traffic Plane (Engines)"]
         direction LR
-        subgraph LOCAL["Embedded Engine (Port 9090)"]
-            LE[LocalWireMockEngine]
+        subgraph LOCAL["Local Engine (Port 9090)"]
+            LE[Embedded WireMock]
         end
-        subgraph REMOTE["Remote Engines"]
-            RE1[Staging API]
-            RE2[QA Environment]
+        subgraph REMOTE["Remote Fleet"]
+            RE1[Staging Mock]
+            RE2[External API Mock]
         end
     end
     
     DB <--> RE
-    Controllers --> Management
-    Management --> LE
-    Management -. HTTP .-> REMOTE
+    Controllers --> EM
+    EM --> RS
+    EM --> LE
+    EM -. HTTP Admin API .-> REMOTE
     
     style WIXY_HUB fill:#141414,stroke:#06b6d4,color:#f4f4f5
     style LOCAL fill:#27272a,stroke:#3f3f46,color:#f4f4f5
     style REMOTE fill:#27272a,stroke:#3f3f46,color:#f4f4f5
 ```
 
-## Key Design Decisions
+## Core Capabilities
 
-| # | Decision | Rationale |
-|---|----------|-----------|
-| **D1** | **Multi-Engine Abstraction** | The Hub uses a `WireMockEngine` interface, making it transparent whether you are managing a local instance or a remote one. |
-| **D2** | **Contextual State** | The Hub maintains an "Active Engine" state, allowing UI and AI agents to work within a focused environment. |
-| **D3** | **Per-Request Routing** | The `X-Wixy-Target-Server` header allows for atomic orchestration—routing single commands to specific servers without context switching. |
-| **D4** | **Persistent Registry** | Managed servers are stored in a local JSON file, ensuring the Hub infrastructure is portable and survives restarts. |
-| **D5** | **Zero-Config Defaults** | On first launch, the Hub automatically registers and connects to its own embedded engine at port 9090. |
+### 1. Centralized Stub Management
+The Hub provides a unified REST API and Web UI to manage stubs across your entire fleet. You can create, update, and delete mappings on any registered server without manually switching URLs or ports.
 
-## The Engine Layer
+### 2. Fleet Registry
+A persistent registry stored at `~/.wixy/servers.json` tracks all your managed instances. The Hub automatically includes the local embedded server on first boot, providing a zero-config experience.
 
-WIXY Hub abstracts the WireMock API into two primary implementations:
+### 3. Transparent Direct Targeting
+By using the `X-Wixy-Target-Server` header, CI/CD pipelines and automated tests can route commands to specific remote engines atomically, bypassing the global "Active Engine" context for high-concurrency orchestration.
 
-### 1. Local Engine
-Directly interacts with the `WireMockServer` instance running in the Hub's JVM. This provides the highest performance and zero network overhead for local development.
-
-### 2. Remote Engine
-Communicates with external WireMock instances via their REST Admin API. This allows the Hub to scale management across cloud environments and distributed teams.
-
-:::info
-For a detailed breakdown of the internal classes and service interactions, see the [Layers documentation](/docs/architecture/layers).
-:::
+### 4. Per-Engine Proxying
+Each registered engine (local or remote) can have its own independent **Target Upstream URL**. This allows you to orchestrate a multi-service mock environment where different engines proxy to different backend microservices simultaneously.

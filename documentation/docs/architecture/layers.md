@@ -23,36 +23,34 @@ Manages the lifecycle of the embedded server instance.
 The Hub evolution introduced this layer to allow management of any WireMock instance, regardless of its location.
 
 ### `WireMockEngine` (Interface)
-The standard interface for all Hub operations. Defines methods for stub CRUD, proxying, and recording.
+The standard interface for all Hub operations. It decouples the management services from the underlying server implementation.
 
 ### `LocalWireMockEngine`
-Implementation that interacts with the in-process `WireMockServer`.
+Implementation that interacts with the in-process `WireMockServer`. Used for the "Embedded" engine.
 
 ### `RemoteWireMockEngine`
-Implementation that communicates with an external server via the WireMock REST Admin API.
+Implementation that communicates with an external server via the WireMock REST Admin API. Used for "Remote" fleet management.
 
 ### `EngineManager`
-The central engine orchestrator.
-- Maintains the **Active Engine** (global context).
-- Manages **Request Overrides** via `ThreadLocal` for direct targeting.
+The central engine orchestrator. It manages the lifecycle of engine instances and handles **Contextual Routing**—determining whether a command should go to the local server or a remote one based on the current user session or per-request headers.
 
-## Layer 2 — Configuration & Registry
+## Layer 2 — Fleet Registry
 
 ### `ServerRegistryService`
-Manages the persistent list of managed servers.
-- Handles CRUD for the server fleet.
-- Persists registry data to `servers.json`.
-- Facilitates context switching between engines.
+Responsible for the persistence and health of the server fleet.
+- **Persistence**: Saves and loads managed servers from `~/.wixy/servers.json`.
+- **Health Monitoring**: Periodically validates reachability of remote engines.
+- **Bootstrapping**: Automatically registers the local instance on first launch.
 
 ### `WixyProperties`
-Externalised configuration for the Hub, Registry, and UI.
+Centralized Spring `@ConfigurationProperties` bean that handlesHub settings, registry paths, and security keys.
 
 ## Layer 3 — Service Layer
 
-Business logic that mediates between interfaces and the `EngineManager`.
+Business logic that mediates between external interfaces and the internal orchestration engine.
 
 ### `StubService`, `ProxyService`, `RecordingService`
-These services no longer depend on a specific server instance. Instead, they fetch the **current active engine** from the `EngineManager` for every operation.
+These services are now **Engine-Agnostic**. They fetch the current **Active Engine** from the `EngineManager` for every operation, allowing them to support both local and remote scenarios without code duplication.
 
 ## Layer 4 — REST & AI Interfaces
 

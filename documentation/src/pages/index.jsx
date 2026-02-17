@@ -10,15 +10,15 @@ function HeroBanner() {
     <header className={styles.heroBanner}>
       <div className="container">
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>Enterprise Service Virtualisation</div>
-          <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+          <div className={styles.heroBadge}>Enterprise Mock Orchestration</div>
+          <h1 className={styles.heroTitle}>WIXY <span style={{ color: '#06b6d4' }}>HUB</span></h1>
           <p className={styles.heroSubtitle}>
-            WireMock Proxy Server on Spring Boot
+            The Central Management Plane for your WireMock Fleet
           </p>
           <p className={styles.heroDescription}>
-            A lightweight, configurable test proxy service that embeds WireMock
-            inside a Spring Boot application — delivering stub management, traffic
-            recording, and proxy forwarding with zero infrastructure overhead.
+            A powerful, Spring Boot-based orchestrator that simplifies service virtualisation. 
+            Connect local and remote WireMock engines, manage stubs via a modern UI, 
+            and automate everything with AI-native MCP tools.
           </p>
           <div className={styles.heroButtons}>
             <Link className={styles.heroPrimary} to="/docs/getting-started/quickstart">
@@ -36,91 +36,91 @@ function HeroBanner() {
 
 const capabilityFeatures = [
   {
+    badge: 'FLEET',
+    color: '#f59e0b',
+    title: 'Engine Orchestration',
+    description:
+      'Manage multiple WireMock instances from a single Hub. Register remote servers (Staging, QA, Cloud) and switch context instantly.',
+  },
+  {
+    badge: 'UI',
+    color: '#06b6d4',
+    title: 'Modern Dashboard',
+    description:
+      'A sleek React-based UI for managing your fleet. Create, edit, and search stubs visually without writing a single line of code.',
+  },
+  {
     badge: 'STUB',
     color: '#0891b2',
-    title: 'Stub Management (CRUD)',
+    title: 'Full Stub CRUD',
     description:
-      'Full REST API for creating, reading, updating, and deleting HTTP stubs at runtime. Pre-packaged stubs loaded from JSON files on startup.',
+      'Powerful JSON editor with live validation. Manage request matching, response templates, and priority for any registered engine.',
   },
   {
     badge: 'PROXY',
     color: '#22c55e',
-    title: 'Proxy Forwarding',
+    title: 'Per-Engine Proxy',
     description:
-      'Transparent proxy mode forwards unmatched requests to a configurable upstream service. Enable or disable at runtime via the Admin API.',
-  },
-  {
-    badge: 'RECORD',
-    color: '#8b5cf6',
-    title: 'Record & Playback',
-    description:
-      'Capture real traffic flowing through the proxy, automatically generate stub mappings, and replay them in isolation — perfect for contract testing.',
-  },
-  {
-    badge: 'SECURE',
-    color: '#f59e0b',
-    title: 'API-Key Security',
-    description:
-      'Optional API-key header authentication for shared and cloud environments. Health and OpenAPI endpoints remain publicly accessible.',
+      'Configure unique upstream target URLs for each engine. Record live traffic and automatically transform it into replayable stubs.',
   },
   {
     badge: 'AI-NATIVE',
-    color: '#06b6d4',
+    color: '#8b5cf6',
     title: 'MCP Integration',
     description:
-      'Native support for Model Context Protocol. Control your proxy, manage stubs, and record traffic using natural language via AI agents like Claude.',
+      'Native Model Context Protocol support. Control your proxy, manage stubs, and record traffic using natural language via AI agents.',
   },
   {
-    badge: 'TEST',
+    badge: 'SECURE',
     color: '#ef4444',
-    title: '186 Tests · 96.5% Coverage',
+    title: 'Enterprise Security',
     description:
-      '129 unit tests + 57 integration tests with JaCoCo enforcement. Integration tests run against local or remote instances — perfect for CI/CD and cloud validation.',
+      'API-key protection for administrative operations. Optimized for multi-tenant and cloud environments with zero infrastructure overhead.',
   },
 ];
 
 const coreFeatures = [
   {
+    icon: '🏢',
+    title: 'Fleet Orchestration',
+    description:
+      'The central Hub acts as a single management plane for multiple WireMock instances across your infrastructure.',
+  },
+  {
+    icon: '🎨',
+    title: 'Modern Dashboard',
+    description:
+      'Manage stubs, recordings, and proxy settings via a high-performance React UI with built-in JSON validation.',
+  },
+  {
     icon: '🔌',
-    title: 'Embedded WireMock',
+    title: 'Dual-Mode Engine',
     description:
-      'WireMock runs as a Spring-managed bean with full lifecycle control — automatic startup, graceful shutdown, and health monitoring out of the box.',
-  },
-  {
-    icon: '📋',
-    title: 'OpenAPI / Swagger UI',
-    description:
-      'Auto-generated interactive API documentation at /swagger-ui.html via SpringDoc OpenAPI. Try every endpoint directly from the browser.',
-  },
-  {
-    icon: '⚡',
-    title: 'Dual-Port Architecture',
-    description:
-      'Spring Boot Admin API on port 8080, WireMock stub server on port 9090. Clean separation of management and traffic planes.',
-  },
-  {
-    icon: '📊',
-    title: 'Health & Actuator',
-    description:
-      'Custom WireMock health indicator integrated with Spring Boot Actuator. Real-time stub count, port status, and recording state.',
+      'Seamlessly switch between an embedded Local engine and remote instances using the same unified interface.',
   },
   {
     icon: '🤖',
     title: 'AI-Native (MCP)',
     description:
-      'Native support for Model Context Protocol. Connect your favorite AI agents directly to WIXY to manage your proxy using natural language.',
+      'Native Model Context Protocol support allows AI agents to configure your test environment using natural language.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Multi-Tenant Ready',
+    description:
+      'Per-request targeting via the X-Wixy-Target-Server header allows sharing a single Hub across multiple projects.',
   },
   {
     icon: '🔧',
-    title: 'Profile-Based Config',
+    title: 'Zero-Config Setup',
     description:
-      'Spring profiles (local, docker, cloud) with 12-factor environment variable overrides. Zero code changes between environments.',
+      'Starts automatically with a pre-configured local engine on port 9090. No external database or setup required.',
   },
   {
     icon: '🚀',
-    title: 'Docker & CI/CD Ready',
+    title: 'Docker & Cloud Optimized',
     description:
-      'Multi-stage Dockerfile, Docker Compose, and GitHub Actions workflows. From local development to production-grade deployment in minutes.',
+      'Lightweight memory footprint and profile-based configuration make it perfect for Kubernetes and CI/CD pipelines.',
   },
 ];
 
