@@ -17,6 +17,7 @@ const Dashboard: React.FC = () => {
   
   // Editor State
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [editingStub, setEditingStub] = useState<StubMapping | undefined>(undefined);
 
   const fetchData = useCallback(async () => {
@@ -96,11 +97,19 @@ const Dashboard: React.FC = () => {
 
   const handleCreateStub = () => {
     setEditingStub(undefined);
+    setIsReadOnly(false);
     setIsEditorOpen(true);
   };
 
   const handleEditStub = (stub: StubMapping) => {
     setEditingStub(stub);
+    setIsReadOnly(false);
+    setIsEditorOpen(true);
+  };
+
+  const handleViewStub = (stub: StubMapping) => {
+    setEditingStub(stub);
+    setIsReadOnly(true);
     setIsEditorOpen(true);
   };
 
@@ -281,7 +290,11 @@ const Dashboard: React.FC = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-gray-500 hover:text-white transition-colors" title="View Details">
+                      <button 
+                        onClick={() => handleViewStub(stub)}
+                        className="p-2 text-gray-500 hover:text-white transition-colors" 
+                        title="View Details"
+                      >
                         <ExternalLink className="w-4 h-4" />
                       </button>
                       <button 
@@ -312,6 +325,7 @@ const Dashboard: React.FC = () => {
         onClose={() => setIsEditorOpen(false)} 
         onSave={() => fetchData()}
         initialStub={editingStub}
+        readOnly={isReadOnly}
       />
     </div>
   );
