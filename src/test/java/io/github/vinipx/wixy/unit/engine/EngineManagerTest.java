@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import io.github.vinipx.wixy.engine.EngineManager;
 import io.github.vinipx.wixy.engine.LocalWireMockEngine;
 import io.github.vinipx.wixy.engine.RemoteWireMockEngine;
+import io.github.vinipx.wixy.engine.WireMockEngine;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -54,5 +55,26 @@ class EngineManagerTest {
     void invalidUrl() {
         assertThatThrownBy(() -> manager.switchToRemote(UUID.randomUUID(), "not a url"))
                 .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("setRequestOverride should temporarily change active engine")
+    void requestOverride() {
+        LocalWireMockEngine override = new LocalWireMockEngine(mock(WireMockServer.class));
+        manager.setRequestOverride(override);
+        
+        assertThat(manager.getActiveEngine()).isEqualTo(override);
+        
+        manager.clearRequestOverride();
+        assertThat(manager.getActiveEngine()).isNotEqualTo(override);
+        assertThat(manager.getActiveEngine()).isInstanceOf(LocalWireMockEngine.class);
+    }
+
+    @Test
+    @DisplayName("getEngineForUrl should create remote engine correctly")
+    void getEngineForUrl() {
+        WireMockEngine engine = manager.getEngineForUrl("https://secure-host:443");
+        assertThat(engine).isInstanceOf(RemoteWireMockEngine.class);
+        assertThat(engine.getPort()).isEqualTo(443);
     }
 }

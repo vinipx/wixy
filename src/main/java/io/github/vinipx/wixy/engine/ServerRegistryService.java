@@ -48,6 +48,12 @@ public class ServerRegistryService {
         return new ArrayList<>(servers);
     }
 
+    public Optional<ManagedServer> getById(UUID id) {
+        return servers.stream()
+                .filter(s -> id.equals(s.getId()))
+                .findFirst();
+    }
+
     public ManagedServer addServer(ManagedServer server) {
         if (server.getId() == null) {
             server.setId(UUID.randomUUID());

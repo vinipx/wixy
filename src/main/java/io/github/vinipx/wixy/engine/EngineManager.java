@@ -15,6 +15,7 @@ import java.util.UUID;
 public class EngineManager {
 
     private static final Logger log = LoggerFactory.getLogger(EngineManager.class);
+    private static final ThreadLocal<WireMockEngine> REQUEST_OVERRIDE = new ThreadLocal<>();
 
     private final WireMockServer localWireMockServer;
     private WireMockEngine activeEngine;
@@ -28,7 +29,16 @@ public class EngineManager {
     }
 
     public WireMockEngine getActiveEngine() {
-        return activeEngine;
+        WireMockEngine override = REQUEST_OVERRIDE.get();
+        return override != null ? override : activeEngine;
+    }
+
+    public void setRequestOverride(WireMockEngine engine) {
+        REQUEST_OVERRIDE.set(engine);
+    }
+
+    public void clearRequestOverride() {
+        REQUEST_OVERRIDE.remove();
     }
 
     public void switchToLocal() {
@@ -38,16 +48,19 @@ public class EngineManager {
     }
 
     public void switchToRemote(UUID id, String url) {
+        this.activeEngine = getEngineForUrl(url);
+        this.activeServerId = id;
+        log.info("Switched to remote WireMock engine: {} ({})", id, url);
+    }
+
+    public WireMockEngine getEngineForUrl(String url) {
         try {
             URI uri = new URI(url);
             String host = uri.getHost();
             int port = uri.getPort() != -1 ? uri.getPort() : (uri.getScheme().equals("https") ? 443 : 80);
-            
-            this.activeEngine = new RemoteWireMockEngine(host, port);
-            this.activeServerId = id;
-            log.info("Switched to remote WireMock engine: {} ({})", id, url);
+            return new RemoteWireMockEngine(host, port);
         } catch (Exception e) {
-            log.error("Failed to switch to remote engine: {}", url, e);
+            log.error("Failed to parse remote engine URL: {}", url, e);
             throw new RuntimeException("Invalid remote URL: " + url, e);
         }
     }

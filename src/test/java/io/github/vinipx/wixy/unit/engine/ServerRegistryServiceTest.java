@@ -81,4 +81,12 @@ class ServerRegistryServiceTest {
         service.removeServer(remote.getId());
         assertThat(service.listAll()).hasSize(1);
     }
+
+    @Test
+    @DisplayName("getById should return the correct server")
+    void getById() {
+        ManagedServer remote = service.addServer(new ManagedServer(null, "Remote", "http://remote:80", ManagedServer.ServerType.REMOTE));
+        assertThat(service.getById(remote.getId())).isPresent();
+        assertThat(service.getById(UUID.randomUUID())).isEmpty();
+    }
 }
