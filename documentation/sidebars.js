@@ -25,6 +25,7 @@ const sidebars = {
       type: "category",
       label: "Features",
       items: [
+        "features/hub-registry",
         "features/stub-management",
         "features/proxy-mode",
         "features/recording",
@@ -75,6 +76,7 @@ const sidebars = {
         "guides/qa-engineers",
         "guides/developers",
         "guides/devops",
+        "guides/remote-engines",
       ],
     },
     {

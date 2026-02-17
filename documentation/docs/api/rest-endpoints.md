@@ -5,124 +5,67 @@ title: REST API Reference
 
 # REST API Reference
 
-Complete reference for WIXY's Admin REST API. All endpoints are served on the **Spring Boot port** (default `8080`). Test traffic should be directed to the **WireMock port** (default `9090`).
+Complete reference for WIXY Hub's Admin REST API. All endpoints are served on the **Hub port** (default `8080`).
 
-:::tip
-Interactive API documentation is available at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) when WIXY is running.
+:::tip Direct Engine Targeting
+All Management APIs support the `X-Wixy-Target-Server` header. Include it to route a request to a specific engine without changing the Hub's global active context.
+- `local`: The embedded Port 9090 server.
+- `<UUID>`: A registered remote server ID.
 :::
 
-## Stub Management
+## Registry Management
 
-### List All Stubs
-
+### List Managed Servers
 ```
-GET /wixy/admin/mappings
+GET /wixy/admin/registry/servers
 ```
 
-**Response:** `200 OK`
+---
 
+### Add Remote Server
+```
+POST /wixy/admin/registry/servers
+Content-Type: application/json
+```
+**Body:**
 ```json
 {
-  "mappings": ["..."],
-  "meta": {
-    "total": 3
-  }
+  "name": "Staging API",
+  "url": "http://staging-wiremock:8080"
 }
+```
+
+---
+
+### Set Active Engine
+```
+POST /wixy/admin/registry/active
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+  "id": "a1b2c3d4-..."
+}
+```
+Use `"id": "local"` to switch back to the embedded engine.
+
+---
+
+## Stub Management
+*Operations are performed on the current **Active Engine** unless a target header is provided.*
+
+### List All Stubs
+```
+GET /wixy/admin/mappings
 ```
 
 ---
 
 ### Create Stub
-
 ```
 POST /wixy/admin/mappings
 Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-  "request": {
-    "method": "GET",
-    "urlPath": "/api/resource"
-  },
-  "response": {
-    "status": 200,
-    "jsonBody": { "key": "value" },
-    "headers": { "Content-Type": "application/json" }
-  }
-}
-```
-
-**Response:** `201 Created`
-
----
-
-### Get Stub by ID
-
-```
-GET /wixy/admin/mappings/{uuid}
-```
-
-**Response:** `200 OK` or `404 Not Found`
-
----
-
-### Update Stub
-
-```
-PUT /wixy/admin/mappings/{uuid}
-Content-Type: application/json
-```
-
-**Request Body:** Same format as Create.
-
-**Response:** `200 OK` or `404 Not Found`
-
----
-
-### Delete Stub
-
-```
-DELETE /wixy/admin/mappings/{uuid}
-```
-
-**Response:** `204 No Content` or `404 Not Found`
-
----
-
-### Reset All Stubs
-
-```
-POST /wixy/admin/mappings/reset
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "All mappings reset"
-}
-```
-
----
-
-### Bulk Import Stubs
-
-```
-POST /wixy/admin/mappings/import
-Content-Type: application/json
-```
-
-**Request Body:** WireMock stub mapping JSON.
-
-**Response:** `200 OK`
-
-```json
-{
-  "imported": 1
-}
 ```
 
 ---
@@ -130,61 +73,19 @@ Content-Type: application/json
 ## Proxy Management
 
 ### Get Proxy Status
-
 ```
 GET /wixy/admin/proxy
 ```
 
-**Response:** `200 OK`
-
-```json
-{
-  "enabled": false,
-  "targetUrl": "",
-  "record": false,
-  "wiremockPort": 9090
-}
-```
-
----
-
 ### Enable Proxy
-
 ```
 POST /wixy/admin/proxy/enable
 Content-Type: application/json
 ```
-
-**Request Body:**
-
+**Body:**
 ```json
 {
   "targetUrl": "https://api.example.com"
-}
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "Proxy enabled",
-  "targetUrl": "https://api.example.com"
-}
-```
-
----
-
-### Disable Proxy
-
-```
-POST /wixy/admin/proxy/disable
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "Proxy disabled"
 }
 ```
 
@@ -193,118 +94,22 @@ POST /wixy/admin/proxy/disable
 ## Recording Management
 
 ### Start Recording
-
 ```
 POST /wixy/admin/recordings/start
 Content-Type: application/json
 ```
 
-**Request Body (optional):**
-
-```json
-{
-  "targetUrl": "https://api.example.com"
-}
-```
-
-If `targetUrl` is omitted, falls back to `wixy.proxy.target-url`.
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "Recording started"
-}
-```
-
----
-
 ### Stop Recording
-
 ```
 POST /wixy/admin/recordings/stop
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "Recording stopped",
-  "capturedStubs": 5
-}
-```
-
----
-
-### Get Recording Status
-
-```
-GET /wixy/admin/recordings/status
-```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "NeverStarted"
-}
 ```
 
 ---
 
 ## Health & Monitoring
 
-### Health Check
-
+### Hub Health
 ```
 GET /actuator/health
 ```
-
-**Response:** `200 OK`
-
-```json
-{
-  "status": "UP",
-  "components": {
-    "wiremock": {
-      "status": "UP",
-      "details": {
-        "port": 9090,
-        "stubCount": 3
-      }
-    }
-  }
-}
-```
-
----
-
-## Error Response Format
-
-All errors follow a consistent format:
-
-```json
-{
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Stub mapping not found: a1b2c3d4-..."
-}
-```
-
-| Status | Cause |
-|--------|-------|
-| `400` | Invalid stub JSON or malformed request |
-| `401` | Missing or invalid `X-Wixy-Api-Key` header (when security enabled) |
-| `404` | Stub UUID not found |
-| `500` | Internal server error |
-
-## Authentication
-
-When security is enabled (`wixy.security.enabled=true`), include the API key header:
-
-```
-X-Wixy-Api-Key: your-api-key
-```
-
-Health and Swagger endpoints are exempt from authentication.
+Includes the health status of the **current active engine** under the `wiremock` component.

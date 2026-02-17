@@ -65,16 +65,20 @@ Once WIXY is running, verify all endpoints are accessible:
 ```bash
 # Health check — should return {"status":"UP"}
 curl http://localhost:8080/actuator/health
-
-# List pre-packaged stubs
-curl http://localhost:8080/wixy/admin/mappings
-
-# Hit the sample stub
-curl http://localhost:9090/api/sample
-
-# Open Swagger UI in your browser
-open http://localhost:8080/swagger-ui.html
 ```
+
+### Access the Dashboard
+Open your browser at **[http://localhost:8080](http://localhost:8080)**. 
+
+WIXY Hub provides a modern dashboard to:
+- **Manage Registry**: Add remote servers and switch engines.
+- **Control Engine**: Toggle proxy and recording at runtime.
+- **Monitor Stubs**: View and manage active mappings in real-time.
+
+### Try the APIs
+Interactive API documentation is also available:
+- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI Spec**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 ## Create Your First Stub
 

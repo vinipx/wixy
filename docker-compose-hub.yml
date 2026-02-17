@@ -1,0 +1,51 @@
+# WIXY HUB — Multi-Service Mock Fleet
+# 
+# This compose file demonstrates how to spin up a centralized Hub
+# managing three specialized remote mocks for a microservices ecosystem.
+#
+# Usage: docker-compose -f docker-compose-hub.yml up -d
+
+services:
+  # ────────────────────────────────────────────────────────────────
+  # WIXY HUB: The Central Control Plane
+  # ────────────────────────────────────────────────────────────────
+  wixy-hub:
+    build: .
+    ports:
+      - "8080:8080" # Management UI & Hub API
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - WIXY_REGISTRY_FILE_PATH=/data/servers.json
+    volumes:
+      - wixy-data:/data
+
+  # ────────────────────────────────────────────────────────────────
+  # REMOTE NODES: Specialized service mocks
+  # ────────────────────────────────────────────────────────────────
+  
+  # Mock 1: Payment Service
+  mock-payments:
+    build: .
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - WIXY_UI_ENABLED=false # Run in headless mode (no UI needed)
+      - WIXY_WIREMOCK_PORT=8080 # Run mock on standard port for simpler routing
+
+  # Mock 2: Inventory Service
+  mock-inventory:
+    build: .
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - WIXY_UI_ENABLED=false
+      - WIXY_WIREMOCK_PORT=8080
+
+  # Mock 3: Order Service
+  mock-orders:
+    build: .
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - WIXY_UI_ENABLED=false
+      - WIXY_WIREMOCK_PORT=8080
+
+volumes:
+  wixy-data:

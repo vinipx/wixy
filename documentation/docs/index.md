@@ -4,57 +4,49 @@ sidebar_position: 1
 title: Introduction
 ---
 
-# WIXY — Enterprise WireMock Proxy Server
+# WIXY Hub — WireMock Management Plane
 
-**WIXY** is a lightweight, configurable **test proxy service** built as a Spring Boot application that embeds a [WireMock](https://wiremock.org/) server. It provides enterprise-grade HTTP service virtualisation with stub management, traffic recording, and proxy forwarding — all deployable with a single command.
+**WIXY Hub** is a lightweight, configurable **control plane** for [WireMock](https://wiremock.org/). It provides a centralized management layer to manage, monitor, and control multiple WireMock instances—both embedded and remote—through a modern Web UI, REST API, or AI-native interface.
 
-## Why WIXY?
+## Why WIXY Hub?
 
-Modern microservice architectures create complex dependency chains that make integration testing fragile and slow. WIXY solves this by providing:
+As microservice ecosystems grow, managing hundreds of stubs across local, staging, and QA environments becomes a bottleneck. WIXY Hub solves this by decoupling the **Management Plane** from the **Mocking Engine**:
 
-- **Instant Service Virtualisation** — Stub any HTTP dependency in seconds via REST API
-- **Traffic Recording** — Capture real traffic and replay it in isolation
-- **Transparent Proxying** — Forward unmatched requests to upstream services
-- **Zero Infrastructure** — Runs as a single JAR with embedded WireMock
-- **Cloud-Native** — Docker, Kubernetes, and CI/CD ready out of the box
+- **Centralized Control** — Manage your entire mock fleet from a single professional dashboard.
+- **Dual-Mode Architecture** — Use the embedded engine for local work or connect to remote servers for shared environments.
+- **Dynamic Orchestration** — Switch contexts instantly or use headers to target specific servers per request.
+- **AI-Native Operations** — Implement AI-driven testing by connecting agents directly to the Hub via MCP.
 
 ## Key Features
 
 | Feature | Description |
 |---------|-------------|
-| **Stub CRUD API** | Create, read, update, and delete HTTP stubs at runtime |
-| **Pre-packaged Stubs** | Load stubs from JSON files on startup |
-| **Proxy Mode** | Forward unmatched requests to a configurable upstream |
-| **Record & Playback** | Capture traffic and auto-generate stub mappings |
-| **API-Key Security** | Optional authentication for shared environments |
-| **MCP Integration** | Control Wixy via AI agents (Claude, Cursor, etc.) |
-| **Health Monitoring** | Spring Actuator with custom WireMock health indicator |
-| **OpenAPI / Swagger** | Auto-generated interactive API documentation |
-| **Profile-Based Config** | `local`, `docker`, `cloud` profiles with env-var overrides |
+| **Modern Dashboard** | Full-featured React UI for stub management and engine control. |
+| **Server Registry** | Register and track multiple local or remote WireMock environments. |
+| **Direct Targeting** | Route management commands to specific servers via the `X-Wixy-Target-Server` header. |
+| **Stub CRUD API** | Create, read, update, and delete HTTP stubs across any registered engine. |
+| **Proxy & Record** | captured real traffic and auto-generate persistent stub mappings. |
+| **MCP Integration** | Control the entire Hub using natural language via AI agents. |
 
-## Architecture at a Glance
+## Hub Architecture at a Glance
+
+WIXY Hub operates on two distinct planes:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        WIXY (Spring Boot)                    │
+│                        WIXY HUB (Port 8080)                  │
 │                                                              │
-│  ┌──────────────┐   ┌────────────────┐   ┌───────────────┐  │
-│  │  Admin API   │   │  Proxy Router  │   │  Stub Store   │  │
-│  │ /wixy/admin  │──▶│  (delegates to │──▶│  (WireMock    │  │
-│  │  Controller  │   │   WireMock)    │   │   mappings)   │  │
-│  └──────────────┘   └───────┬────────┘   └───────────────┘  │
-│                             │                                │
-│                    ┌────────▼────────┐                       │
-│                    │ Embedded        │                       │
-│                    │ WireMockServer  │                       │
-│                    │ (port 9090)     │                       │
-│                    └────────┬────────┘                       │
-│                             │ unmatched                      │
-│  ┌──────────────┐  ┌───────▼────────┐                       │
-│  │  Spring Boot  │  │ Proxy/Record  │                       │
-│  │  Actuator     │  │ to upstream   │                       │
-│  │  (port 8080)  │  └───────────────┘                       │
-│  └──────────────┘                                            │
+│  ┌──────────────┐      ┌──────────────┐      ┌────────────┐  │
+│  │  Registry    │◀────▶│  Management  │◀────▶│  Web UI    │  │
+│  │  (Servers)   │      │  Orchestrator│      │ (Dashboard)│  │
+│  └──────────────┘      └───────┬──────┘      └────────────┘  │
+│                                │                               │
+│                    ┌───────────┴───────────┐                   │
+│                    ▼                       ▼                   │
+│           ┌────────────────┐      ┌────────────────┐           │
+│           │ Local Engine   │      │ Remote Engine  │           │
+│           │ (Port 9090)    │      │ (External API) │           │
+│           └────────────────┘      └────────────────┘           │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -62,33 +54,16 @@ Modern microservice architectures create complex dependency chains that make int
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Language | Java | 21 (LTS) |
-| Framework | Spring Boot | 3.4.x |
-| Mock Engine | WireMock | 3.13.x (standalone) |
-| AI Protocol | Spring AI (MCP) | 1.0.0-M8 |
-| Build | Gradle | 9.x (Kotlin DSL) |
-| API Docs | SpringDoc OpenAPI | 2.x |
-| Testing | JUnit 5 + RestAssured | 186 tests (96.5% coverage) |
-| Coverage | JaCoCo | ≥ 80% enforced |
-| Containers | Docker | Multi-stage |
+| **Backend** | Java 21 + Spring Boot 3.4 | LTS / Modern |
+| **Frontend** | React + Tailwind CSS + Lucide | Fast / Responsive |
+| **Mock Engine** | WireMock | 3.13.x |
+| **AI Protocol** | Spring AI (MCP) | 1.0.0-M8 |
+| **Testing** | JUnit 5 + RestAssured | 186+ Tests |
 
 ## Quick Navigation
 
-- **[Getting Started →](/docs/getting-started/quickstart)** — Install and run WIXY in under a minute
-- **[Architecture →](/docs/architecture/overview)** — Understand the design decisions and component layout
-- **[AI-Native (MCP) →](/docs/mcp/overview)** — Connect AI agents to manage your proxy
-- **[API Reference →](/docs/api/rest-endpoints)** — Complete REST API documentation
-- **[Testing →](/docs/testing/overview)** — Unit tests, integration tests, and coverage strategy
-- **[Running Locally →](/docs/testing/running-locally)** — Run and test WIXY on your machine
-- **[Use Cases →](/docs/examples/use-cases)** — Real-world examples and patterns
-- **[Deployment →](/docs/deployment/docker)** — Docker, Kubernetes, and CI/CD guides
-
-## Testing
-
-WIXY includes comprehensive testing capabilities:
-
-- **Unit Tests**: Validate individual components in isolation.
-- **Integration Tests**: Ensure the system works as a whole.
-- **Running Locally**: Guides for setting up and testing on your machine.
-
-See the [Testing Documentation](testing/overview) for details.
+- **[Getting Started →](/docs/getting-started/quickstart)** — Launch the Hub in under a minute.
+- **[Hub & Registry →](/docs/features/hub-registry)** — Learn how to manage multiple environments.
+- **[Architecture →](/docs/architecture/overview)** — Deep dive into the Hub's internals.
+- **[API Reference →](/docs/api/rest-endpoints)** — Registry and Engine API documentation.
+- **[AI-Native (MCP) →](/docs/mcp/overview)** — Manage your fleet via AI agents.

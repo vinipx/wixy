@@ -5,14 +5,16 @@ title: Environment Variables
 
 # Environment Variables
 
-WIXY follows [12-Factor App](https://12factor.net/) principles. Every configuration property can be overridden via environment variables.
+WIXY Hub follows [12-Factor App](https://12factor.net/) principles. Every configuration property can be overridden via environment variables.
 
 ## Complete Reference
 
 | Environment Variable | Maps To | Default | Description |
 |---------------------|---------|---------|-------------|
-| `SERVER_PORT` | `server.port` | `8080` | Spring Boot HTTP port |
-| `WIXY_WIREMOCK_PORT` | `wixy.wiremock.port` | `9090` | WireMock stub server port |
+| `SERVER_PORT` | `server.port` | `8080` | Hub HTTP port (UI/API) |
+| `WIXY_REGISTRY_FILE_PATH` | `wixy.registry.file-path` | `~/.wixy/servers.json` | Path to persistent registry file |
+| `WIXY_UI_ENABLED` | `wixy.ui.enabled` | `true` | Toggle management dashboard |
+| `WIXY_WIREMOCK_PORT` | `wixy.wiremock.port` | `9090` | Embedded engine port |
 | `WIXY_WIREMOCK_VERBOSE` | `wixy.wiremock.verbose` | `true` | Verbose WireMock logging |
 | `WIXY_WIREMOCK_ROOT_DIR` | `wixy.wiremock.root-dir` | `classpath:/wiremock` | WireMock mappings directory |
 | `WIXY_PROXY_ENABLED` | `wixy.proxy.enabled` | `false` | Enable proxy forwarding |
@@ -24,54 +26,19 @@ WIXY follows [12-Factor App](https://12factor.net/) principles. Every configurat
 
 ## Usage Examples
 
-### Local Development
-
-```bash
-# All defaults — just run
-java -jar wixy.jar
-```
-
-### Docker with Proxy
+### Custom Registry Path
 
 ```bash
 docker run -d \
   -p 8080:8080 \
-  -p 9090:9090 \
-  -e SPRING_PROFILES_ACTIVE=docker \
-  -e WIXY_PROXY_ENABLED=true \
-  -e WIXY_PROXY_TARGET_URL=https://api.example.com \
+  -e WIXY_REGISTRY_FILE_PATH=/data/servers.json \
   wixy:latest
 ```
 
-### Cloud with Security
+### Headless Hub (API Only)
 
 ```bash
-docker run -d \
-  -p 8080:8080 \
-  -p 9090:9090 \
-  -e SPRING_PROFILES_ACTIVE=cloud \
-  -e WIXY_SECURITY_ENABLED=true \
-  -e WIXY_SECURITY_API_KEY=prod-secret-key-2025 \
-  -e WIXY_PROXY_ENABLED=true \
-  -e WIXY_PROXY_TARGET_URL=https://production-api.example.com \
-  wixy:latest
-```
-
-### Recording Mode
-
-```bash
-export WIXY_PROXY_ENABLED=true
-export WIXY_PROXY_TARGET_URL=https://api.example.com
-export WIXY_PROXY_RECORD=true
-java -jar wixy.jar --spring.profiles.active=local
-```
-
-### Custom Ports
-
-```bash
-export SERVER_PORT=3000
-export WIXY_WIREMOCK_PORT=3001
-java -jar wixy.jar
+java -jar wixy.jar --wixy.ui.enabled=false
 ```
 
 ## Naming Convention
@@ -80,19 +47,7 @@ Spring Boot converts environment variables to properties using relaxed binding:
 
 | Environment Variable | Property |
 |---------------------|----------|
-| `WIXY_WIREMOCK_PORT` | `wixy.wiremock.port` |
-| `WIXY_PROXY_TARGET_URL` | `wixy.proxy.target-url` |
-| `WIXY_SECURITY_API_KEY` | `wixy.security.api-key` |
+| `WIXY_REGISTRY_FILE_PATH` | `wixy.registry.file-path` |
+| `WIXY_UI_ENABLED` | `wixy.ui.enabled` |
 
 **Rule:** Replace dots with underscores and use UPPER_CASE.
-
-## Validation
-
-Properties are validated at startup using Jakarta Bean Validation:
-
-| Property | Constraint | Error on Violation |
-|----------|-----------|-------------------|
-| `wixy.wiremock.port` | `@Min(0) @Max(65535)` | Application fails to start |
-| `wixy.wiremock` | `@NotNull` | Application fails to start |
-| `wixy.proxy` | `@NotNull` | Application fails to start |
-| `wixy.security` | `@NotNull` | Application fails to start |

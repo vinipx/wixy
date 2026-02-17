@@ -5,164 +5,72 @@ title: Architecture Overview
 
 # Architecture Overview
 
-WIXY follows a **layered architecture** with clear separation of concerns. A Spring Boot application manages the lifecycle of an embedded WireMock server, exposing administrative controls through REST endpoints while WireMock handles the actual request stubbing and proxying.
+WIXY Hub follows a **Management-as-an-Orchestrator** architecture. It decouples the administrative plane (Spring Boot Hub) from the traffic plane (WireMock Engines), allowing for the management of multiple environments from a single point of control.
 
 ## High-Level Architecture
 
 ```mermaid
 graph TB
-    subgraph WIXY["WIXY (Spring Boot Application)"]
+    subgraph WIXY_HUB["WIXY HUB (Port 8080)"]
         direction TB
         
-        subgraph Controllers["REST Controllers (Port 8080)"]
-            AC[AdminController<br/>/wixy/admin/mappings]
-            PC[ProxyController<br/>/wixy/admin/proxy]
-            RC[RecordingController<br/>/wixy/admin/recordings]
-            HC[Actuator<br/>/actuator/health]
+        subgraph UI["Management UI"]
+            DB[React Dashboard]
+        end
+
+        subgraph Controllers["REST & AI Interfaces"]
+            AC[Admin API]
+            RE[Registry API]
+            MC[MCP Tools]
         end
         
-        subgraph Services["Service Layer"]
-            SS[StubService]
-            PS[ProxyService]
-            RS[RecordingService]
+        subgraph Management["Core Orchestrator"]
+            EM[Engine Manager]
+            RS[Server Registry]
         end
-        
-        subgraph Config["Configuration"]
-            WP[WixyProperties]
-            SC[SecurityConfig]
-            WC[WireMockConfig]
-            HI[WireMockHealthIndicator]
+    end
+
+    subgraph TrafficPlane["Traffic Plane"]
+        direction LR
+        subgraph LOCAL["Embedded Engine (Port 9090)"]
+            LE[LocalWireMockEngine]
         end
-        
-        subgraph Engine["Embedded WireMock (Port 9090)"]
-            WM[WireMockServer]
-            SM[Stub Mappings]
-            PE[Proxy Engine]
-            RR[Recorder]
+        subgraph REMOTE["Remote Engines"]
+            RE1[Staging API]
+            RE2[QA Environment]
         end
     end
     
-    Client["Test Client"] -->|HTTP| Controllers
-    TestTraffic["Test Traffic"] -->|HTTP| Engine
-    Engine -->|Unmatched| Upstream["Upstream Service"]
+    DB <--> RE
+    Controllers --> Management
+    Management --> LE
+    Management -. HTTP .-> REMOTE
     
-    Controllers --> Services
-    Services --> Engine
-    Config --> Engine
-    
-    style WIXY fill:#141414,stroke:#06b6d4,color:#f4f4f5
-    style Controllers fill:#18181b,stroke:#3f3f46,color:#f4f4f5
-    style Services fill:#27272a,stroke:#3f3f46,color:#f4f4f5
-    style Config fill:#3f3f46,stroke:#52525b,color:#f4f4f5
-    style Engine fill:#52525b,stroke:#71717a,color:#f4f4f5
+    style WIXY_HUB fill:#141414,stroke:#06b6d4,color:#f4f4f5
+    style LOCAL fill:#27272a,stroke:#3f3f46,color:#f4f4f5
+    style REMOTE fill:#27272a,stroke:#3f3f46,color:#f4f4f5
 ```
 
 ## Key Design Decisions
 
 | # | Decision | Rationale |
 |---|----------|-----------|
-| D1 | **Two ports**: Spring Boot on `8080`, WireMock on `9090` | Clear separation of management and traffic planes. Ports are independently configurable. |
-| D2 | WireMock managed via a **Spring `@Bean`** with `@PostConstruct`/`@PreDestroy` | Lifecycle is tied to the Spring context — guarantees clean startup and graceful shutdown. |
-| D3 | **Proxy/record mode** is opt-in via config | When `wixy.proxy.target-url` is set, unmatched requests proxy upstream. When empty, unmatched requests return 404. |
-| D4 | Stubs from **classpath AND runtime API** | Pre-packaged stubs in `classpath:/wiremock/mappings/` load on startup; dynamic stubs created via Admin API at runtime. |
-| D5 | **No authentication by default** | Test tools should be frictionless locally but lockable in shared environments via optional API-key. |
-| D6 | **Configuration externalised** via profiles + env vars | 12-factor compliant. Easy to configure in any runtime (local, Docker, K8s, cloud). |
+| **D1** | **Multi-Engine Abstraction** | The Hub uses a `WireMockEngine` interface, making it transparent whether you are managing a local instance or a remote one. |
+| **D2** | **Contextual State** | The Hub maintains an "Active Engine" state, allowing UI and AI agents to work within a focused environment. |
+| **D3** | **Per-Request Routing** | The `X-Wixy-Target-Server` header allows for atomic orchestration—routing single commands to specific servers without context switching. |
+| **D4** | **Persistent Registry** | Managed servers are stored in a local JSON file, ensuring the Hub infrastructure is portable and survives restarts. |
+| **D5** | **Zero-Config Defaults** | On first launch, the Hub automatically registers and connects to its own embedded engine at port 9090. |
 
-## Component Interaction Flow
+## The Engine Layer
 
-### Stub Creation Flow
+WIXY Hub abstracts the WireMock API into two primary implementations:
 
-```mermaid
-sequenceDiagram
-    participant C as Test Client
-    participant AC as AdminController
-    participant SS as StubService
-    participant WM as WireMockServer
-    
-    C->>AC: POST /wixy/admin/mappings
-    AC->>SS: create(json)
-    SS->>WM: addStubMapping(mapping)
-    WM-->>SS: StubMapping (with UUID)
-    SS-->>AC: Created stub
-    AC-->>C: 201 Created + stub JSON
-```
+### 1. Local Engine
+Directly interacts with the `WireMockServer` instance running in the Hub's JVM. This provides the highest performance and zero network overhead for local development.
 
-### Request Matching Flow
-
-```mermaid
-sequenceDiagram
-    participant T as Test Traffic
-    participant WM as WireMockServer
-    participant SM as Stub Mappings
-    participant PE as Proxy Engine
-    participant US as Upstream Service
-    
-    T->>WM: GET /api/resource
-    WM->>SM: Find matching stub
-    
-    alt Stub Found
-        SM-->>WM: Matched response
-        WM-->>T: Stubbed response (200)
-    else No Match + Proxy Enabled
-        WM->>PE: Forward to upstream
-        PE->>US: GET /api/resource
-        US-->>PE: Real response
-        PE-->>WM: Proxied response
-        WM-->>T: Upstream response
-    else No Match + Proxy Disabled
-        WM-->>T: 404 Not Found
-    end
-```
-
-## Package Structure
-
-```
-io.github.vinipx.wixy/
-├── WixyApplication.java              # Spring Boot entry point
-├── config/
-│   ├── WireMockConfig.java            # WireMock bean + lifecycle
-│   ├── WixyProperties.java            # @ConfigurationProperties
-│   ├── SecurityConfig.java            # Optional API-key filter
-│   └── WireMockHealthIndicator.java   # Custom health indicator
-├── controller/
-│   ├── AdminController.java           # Stub CRUD REST API
-│   ├── ProxyController.java           # Proxy config toggles
-│   └── RecordingController.java       # Record/stop/status
-├── service/
-│   ├── StubService.java               # Stub business logic
-│   ├── ProxyService.java              # Proxy management logic
-│   └── RecordingService.java          # Recording lifecycle
-└── exception/
-    ├── WixyException.java             # Base exception
-    ├── StubNotFoundException.java     # 404 for missing stubs
-    ├── InvalidStubDefinitionException.java  # 400 for bad JSON
-    └── GlobalExceptionHandler.java    # @ControllerAdvice
-```
-
-## Resource Structure
-
-```
-src/main/resources/
-├── application.yml              # Default configuration
-├── application-local.yml        # Local dev overrides
-├── application-docker.yml       # Docker overrides
-├── application-cloud.yml        # Cloud overrides (security ON)
-└── wiremock/
-    ├── mappings/                 # Pre-packaged stub JSON files
-    │   └── sample-stub.json
-    └── __files/                  # Response body files
-        └── sample-response.json
-```
-
-## Thread Model
-
-WIXY runs two independent server threads:
-
-1. **Spring Boot (Tomcat)** — Handles Admin API requests on port `8080`
-2. **WireMock (Jetty)** — Handles stub/proxy traffic on port `9090`
-
-Both servers share the same JVM process, enabling direct in-process communication between the Spring service layer and WireMock's internal APIs without network overhead.
+### 2. Remote Engine
+Communicates with external WireMock instances via their REST Admin API. This allows the Hub to scale management across cloud environments and distributed teams.
 
 :::info
-For detailed component specifications including every class and method, see the [Layers documentation](/docs/architecture/layers).
+For a detailed breakdown of the internal classes and service interactions, see the [Layers documentation](/docs/architecture/layers).
 :::
