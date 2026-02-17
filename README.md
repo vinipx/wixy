@@ -7,9 +7,11 @@
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-MCP-blue.svg)](https://spring.io/projects/spring-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **The Central Management Plane for your WireMock Fleet.**
+> **📚 Live Documentation: [https://vinipx.github.io/wixy/](https://vinipx.github.io/wixy/)**
 
-WIXY Hub is a professional, Spring Boot-based orchestrator designed to simplify service virtualisation. It allows developers and QA teams to control, monitor, and manage an entire fleet of WireMock engines—both local and remote—from a single, modern dashboard.
+WIXY Hub is a professional, Spring Boot-based orchestrator designed to simplify service virtualisation. It allows developers and QA teams to **control, monitor, and manage an entire fleet of WireMock engines**—both local and remote—from a single, modern dashboard.
+
+Whether you are running a single mock for local development or orchestrating a complex microservices test environment, WIXY Hub provides the central management plane you need.
 
 ---
 
@@ -30,39 +32,60 @@ Open your browser at **[http://localhost:8080](http://localhost:8080)**.
 
 ---
 
-## ✨ Key Capabilities
+## 🏢 Fleet Orchestration & Remote Management
 
-- 🏢 **Fleet Orchestration** — Manage multiple WireMock instances across your infrastructure from one central Hub.
-- 🌐 **Remote Management** — Register and control external servers (Staging, QA, Cloud) as easily as local ones.
-- 🖥️ **Modern Dashboard** — A high-performance React UI for visual stub management, recording, and real-time health monitoring.
-- 🛠️ **Full Stub CRUD** — Create, edit, and update mappings using a powerful JSON editor with live validation.
-- 🎯 **Direct Targeting** — Route requests to specific engines atomically using the `X-Wixy-Target-Server` header.
-- 🕵️ **Traffic Recorder** — Capture live traffic on any engine and automatically transform it into persistent stub mappings.
-- 🤖 **AI-Native (MCP)** — Native support for Model Context Protocol. Manage your fleet using natural language via AI agents.
+The core power of WIXY Hub lies in its ability to manage **multiple WireMock instances** transparently.
+
+- **Unified Registry**: Maintain a persistent list of all your mock servers (Staging, QA, Cloud) in one place.
+- **Context Switching**: Instantly switch the Hub's active context to any registered server. All UI actions (creating stubs, recording) are automatically routed to the active engine.
+- **Health Monitoring**: The Hub proactively monitors the reachability of all remote engines, giving you real-time visibility into your test infrastructure health.
+
+**Use Case:** A QA engineer can fix a broken stub on the `staging-payment-mock` directly from their local WIXY Hub dashboard without needing SSH access or complex configuration changes.
 
 ---
 
-## 🎯 Direct Targeting (Power Users)
+## 🖥️ Modern Management Dashboard
 
-WIXY Hub supports per-request orchestration. You can target any registered server without changing the global "Active Engine" context:
+Forget raw cURL commands. WIXY Hub provides a sleek, high-performance React UI.
+
+- **Visual Stub Editor**: Create and edit complex JSON mappings with syntax highlighting and live validation.
+- **Traffic Recorder**: Capture live requests passing through any engine and automatically convert them into persistent stubs with one click.
+- **Live Proxy Control**: Toggle proxy settings and update upstream target URLs at runtime for any engine in your fleet.
+- **Stub Search & Filter**: Quickly find specific mappings across hundreds of stubs using method, URL, and status filters.
+
+---
+
+## 🎯 Direct Targeting (CI/CD Automation)
+
+For automated pipelines, WIXY Hub supports **atomic, per-request orchestration**. You can target any registered server without changing the global "Active Engine" context, enabling high-concurrency testing.
+
+Simply add the `X-Wixy-Target-Server` header to any Admin API request:
 
 ```bash
-# Register a stub on a specific remote engine via the central Hub
+# Register a stub on the 'inventory-mock' specifically
 curl -X POST http://localhost:8080/wixy/admin/mappings \
-  -H "X-Wixy-Target-Server: <server-uuid>" \
+  -H "X-Wixy-Target-Server: inventory-mock-id" \
   -H "Content-Type: application/json" \
-  -d '{ ... stub json ... }'
+  -d '{
+    "request": { "method": "GET", "url": "/api/stock/123" },
+    "response": { "status": 200, "jsonBody": { "count": 50 } }
+  }'
 ```
+
+**Use Case:** A CI pipeline running parallel integration tests can dynamically configure the `payment-mock` for Scenario A and the `inventory-mock` for Scenario B simultaneously via the same Hub instance.
 
 ---
 
-## 🤖 Model Context Protocol (MCP)
+## 🤖 AI-Native Integration (MCP)
 
-WIXY Hub is AI-native. It exposes its orchestration tools via SSE, allowing AI agents (like Claude or Cursor) to adapt your test environment on the fly.
+WIXY Hub is built for the AI era. It natively implements the **Model Context Protocol (MCP)**, exposing its entire orchestration capability as tools for AI agents.
+
+Connect **Claude Desktop**, **Cursor**, or any MCP-compliant client to:
+- *"Connect to the QA mock server."*
+- *"Analyze the last 10 requests and create a stub for the failed one."*
+- *"Simulate high latency on the checkout endpoint."*
 
 **MCP Endpoint:** `http://localhost:8080/wixy/mcp`
-
-> *"Claude, connect to the inventory-mock and simulate a 503 error for all POST /orders requests."*
 
 ---
 
@@ -79,6 +102,8 @@ WIXY Hub is AI-native. It exposes its orchestration tools via SSE, allowing AI a
 ---
 
 ## 🧪 Build & Verify
+
+The project enforces strict quality gates. The build process verifies backend logic, frontend assets, and documentation integrity.
 
 ```bash
 # Build and run all quality checks (Unit + Integration + Frontend + Docs)
