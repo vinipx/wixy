@@ -1,4 +1,7 @@
-# WIXY Hub — Enterprise WireMock Orchestrator
+<div align="center">
+  <img src="https://raw.githubusercontent.com/vinipx/wixy/main/documentation/static/img/logo.svg" width="120" alt="WIXY Hub Logo" />
+  <h1>WIXY Hub</h1>
+  <h3>Enterprise WireMock Orchestrator</h3>
 
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://vinipx.github.io/wixy/)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
@@ -6,6 +9,8 @@
 [![WireMock](https://img.shields.io/badge/WireMock-3.13.0-purple.svg)](https://wiremock.org/)
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-MCP-blue.svg)](https://spring.io/projects/spring-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
 
 > **📚 Live Documentation: [https://vinipx.github.io/wixy/](https://vinipx.github.io/wixy/)**
 
