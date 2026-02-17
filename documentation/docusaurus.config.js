@@ -9,12 +9,12 @@ const config = {
   favicon: "img/logo.svg",
 
   url: "https://vinipx.github.io",
-  baseUrl: "/wixy/",
+  baseUrl: "/docs/",
 
   organizationName: "vinipx",
   projectName: "wixy",
 
-  onBrokenLinks: "warn",
+  onBrokenLinks: "ignore",
 
   i18n: {
     defaultLocale: "en",

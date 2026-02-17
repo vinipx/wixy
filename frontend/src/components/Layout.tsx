@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Server, Activity, Github, Zap } from 'lucide-react';
+import { Server, Activity, Github } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -15,8 +15,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <nav className="sticky top-0 z-50 bg-[#0d0d0d]/80 backdrop-blur-md border-b border-white/10 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-3 no-underline">
-            <div className="bg-wixy-cyan p-1.5 rounded-lg">
-              <Zap className="text-white w-5 h-5 fill-white" />
+            <div className="p-1 rounded-lg">
+              <img src="/vite.svg" alt="WIXY Logo" className="w-8 h-8" />
             </div>
             <span className="font-black text-xl tracking-tighter text-white">WIXY <span className="text-wixy-cyan">HUB</span></span>
           </Link>
@@ -56,7 +56,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             Copyright © {new Date().getFullYear()} WIXY — MIT License
           </p>
           <div className="flex gap-6 text-gray-500 text-xs font-bold uppercase tracking-widest">
-            <a href="#" className="hover:text-wixy-cyan transition-colors no-underline">Documentation</a>
+            <a href="/docs/" target="_blank" rel="noreferrer" className="hover:text-wixy-cyan transition-colors no-underline">Documentation</a>
             <a href="#" className="hover:text-wixy-cyan transition-colors no-underline">Support</a>
           </div>
         </div>

@@ -120,8 +120,50 @@ tasks.register<Exec>("buildFrontend") {
 }
 
 tasks.processResources {
-    dependsOn("buildFrontend")
+    dependsOn("buildFrontend", "buildDocs")
     from(file("frontend/dist")) {
         into("static")
+    }
+    from(file("documentation/build")) {
+        into("static/docs")
+    }
+}
+
+// ── Documentation Build ──────────────────────────────────────────
+tasks.register<Exec>("npmInstallDocs") {
+    group = "documentation"
+    workingDir = file("documentation")
+    if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        commandLine("cmd", "/c", "npm", "install")
+    } else {
+        commandLine("sh", "-c", "npm install")
+    }
+}
+
+tasks.register<Exec>("buildDocs") {
+    group = "documentation"
+    dependsOn("npmInstallDocs")
+    workingDir = file("documentation")
+    if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        commandLine("cmd", "/c", "npm", "run", "build")
+    } else {
+        commandLine("sh", "-c", "npm run build")
+    }
+}
+
+// Fix buildFrontend/npmInstall tasks as well for consistency
+tasks.named<Exec>("npmInstall") {
+    if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        commandLine("cmd", "/c", "npm", "install")
+    } else {
+        commandLine("sh", "-c", "npm install")
+    }
+}
+
+tasks.named<Exec>("buildFrontend") {
+    if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+        commandLine("cmd", "/c", "npm", "run", "build")
+    } else {
+        commandLine("sh", "-c", "npm run build")
     }
 }
