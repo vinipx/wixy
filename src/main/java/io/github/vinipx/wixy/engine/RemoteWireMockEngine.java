@@ -30,7 +30,11 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public StubMapping getStubById(UUID id) {
-        return client.getStubMapping(id).getItem();
+        try {
+            return client.getStubMapping(id).getItem();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
@@ -40,7 +44,10 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public void editStubMapping(StubMapping mapping) {
-        client.register(mapping); // WireMock's register handles both create and update if ID is present
+        if (mapping.getId() != null) {
+            client.removeStubMapping(mapping.getId());
+        }
+        client.register(mapping);
     }
 
     @Override
@@ -65,7 +72,7 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public void startRecording(String targetUrl) {
-        client.startRecording(
+        client.startStubRecording(
                 new RecordSpecBuilder()
                         .forTarget(targetUrl)
                         .ignoreRepeatRequests()
@@ -75,12 +82,12 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public SnapshotRecordResult stopRecording() {
-        return client.stopRecording();
+        return client.stopStubRecording();
     }
 
     @Override
     public RecordingStatus getRecordingStatus() {
-        return client.getRecordingStatus().getStatus();
+        return client.getStubRecordingStatus().getStatus();
     }
 
     @Override
