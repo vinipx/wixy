@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { engineApi } from '../api';
-import type { ProxyStatus, StubMapping } from '../types';
+import { engineApi, registryApi } from '../api';
+import type { ProxyStatus, StubMapping, ManagedServer } from '../types';
 import StubEditor from '../components/StubEditor';
 import { 
   Play, Square, Radio, Shield, 
   ArrowRightLeft, FileJson, Activity, 
-  Trash2, ExternalLink, RefreshCw, Plus, Edit 
-} from 'lucide-react';
-
-const Dashboard: React.FC = () => {
+  Trash2, ExternalLink, RefreshCw, Plus, Edit, ChevronDown
+  } from 'lucide-react';
+  const Dashboard: React.FC = () => {
   const [proxyStatus, setProxyStatus] = useState<ProxyStatus | null>(null);
-  const [recordingStatus, setRecordingStatus] = useState<string>('NeverStarted');
-  const [stubs, setStubs] = useState<StubMapping[]>([]);
+  const [activeServer, setActiveServer] = useState<ManagedServer | null>(null);
+  const [allServers, setAllServers] = useState<ManagedServer[]>([]);
+  const [recordingStatus, setRecordingStatus] = useState<string>('NeverStarted');  const [stubs, setStubs] = useState<StubMapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [targetUrl, setTargetUrl] = useState('');
   
@@ -23,18 +23,44 @@ const Dashboard: React.FC = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [proxy, rec, stubsRes] = await Promise.all([
+      // Use allSettled to handle partial failures gracefully without throwing immediately
+      const [proxyRes, recRes, stubsRes, activeRes, allServersRes] = await Promise.allSettled([
         engineApi.getProxyStatus(),
         engineApi.getRecordingStatus(),
         engineApi.listStubs(),
+        registryApi.getActive(),
+        registryApi.listServers(),
       ]);
-      setProxyStatus(proxy.data);
-      setRecordingStatus(rec.data.status);
-      setStubs(stubsRes.data.mappings || []);
+
+      if (proxyRes.status === 'fulfilled') {
+        setProxyStatus(proxyRes.value.data);
+      }
+      
+      if (recRes.status === 'fulfilled') {
+        setRecordingStatus(recRes.value.data.status);
+      } else {
+        setRecordingStatus('Unknown');
+      }
+
+      if (stubsRes.status === 'fulfilled') {
+        setStubs(stubsRes.value.data.mappings || []);
+      }
+
+      if (activeRes.status === 'fulfilled') {
+        setActiveServer(activeRes.value.data);
+      }
+
+      if (allServersRes.status === 'fulfilled') {
+        setAllServers(allServersRes.value.data);
+      }
+
+      // If all failed, then it's a real connection issue
+      if (proxyRes.status === 'rejected' && recRes.status === 'rejected' && stubsRes.status === 'rejected') {
+        throw proxyRes.reason;
+      }
     } catch (err: unknown) {
       console.error('Failed to fetch dashboard data', err);
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      alert(`Error fetching data: ${errorMessage}`);
+      // Optional: Only alert for critical failures, or use a toast instead of alert
     } finally {
       setLoading(false);
     }
@@ -51,6 +77,18 @@ const Dashboard: React.FC = () => {
       setTargetUrl(proxyStatus.targetUrl);
     }
   }, [proxyStatus, targetUrl]);
+
+  const handleSwitchEngine = async (id: string | null) => {
+    try {
+      setLoading(true);
+      await registryApi.setActive(id);
+      await fetchData();
+    } catch (err: unknown) {
+      console.error('Failed to switch engine', err);
+      alert('Failed to switch active engine');
+      setLoading(false);
+    }
+  };
 
   const handleToggleProxy = async () => {
     try {
@@ -121,18 +159,34 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-white mb-2">Engine Control</h1>
-          <p className="text-gray-400 text-lg flex items-center gap-2">
-            Connected to active WireMock instance on port <span className="text-wixy-cyan font-mono font-bold">{proxyStatus?.wiremockPort}</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-xl">
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Managed Engine</label>
+          <div className="relative group">
+            <select 
+              value={activeServer?.id || 'local'}
+              onChange={(e) => handleSwitchEngine(e.target.value === 'local' ? null : e.target.value)}
+              className="appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-xl font-bold text-white focus:outline-none focus:border-wixy-cyan transition-all cursor-pointer hover:bg-black/60 min-w-[240px]"
+            >
+              {allServers.map(server => (
+                <option key={server.id || 'local'} value={server.id || 'local'}>
+                  {server.name} {server.type === 'INTERNAL' ? '(Embedded)' : ''}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-5 h-5 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-wixy-cyan transition-colors" />
+          </div>
+          <p className="text-gray-500 text-xs mt-1 ml-1 flex items-center gap-2">
+            <Activity className="w-3 h-3 text-green-500" />
+            Active on port <span className="text-white font-mono">{proxyStatus?.wiremockPort}</span>
           </p>
         </div>
+        
         <div className="flex gap-3">
-          <button onClick={fetchData} className="wixy-button-secondary self-start md:self-center flex items-center gap-2">
-            <RefreshCw className="w-4 h-4" /> Refresh
+          <button onClick={fetchData} className="wixy-button-secondary flex items-center gap-2">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </button>
-          <button onClick={handleCreateStub} className="wixy-button-primary self-start md:self-center flex items-center gap-2">
+          <button onClick={handleCreateStub} className="wixy-button-primary flex items-center gap-2">
             <Plus className="w-4 h-4" /> Create Stub
           </button>
         </div>

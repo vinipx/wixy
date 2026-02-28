@@ -55,16 +55,29 @@ graph TB
     style REMOTE fill:#27272a,stroke:#3f3f46,color:#f4f4f5
 ```
 
+## Management vs. Traffic Planes
+
+WIXY Hub operates on two distinct logical planes:
+
+1.  **Management Plane (Hub):** The Spring Boot application (Port 8080) that hosts the UI, manages the Fleet Registry, and orchestrates commands.
+2.  **Traffic Plane (Engines):** One or more WireMock instances (Local Port 9090 or Remote) that handle the actual mock traffic from your applications.
+
+This separation allows the Hub to remain a lightweight, stateless control center while the Traffic Plane handles heavy data loads.
+
+## Unified Log Streaming
+
+The Hub implements a **dual-mode logging architecture** to provide a single view of traffic regardless of where an engine is running:
+
+*   **Local Streaming:** Uses direct memory interception via WireMock listeners to push logs to the UI via WebSockets.
+*   **Remote Polling:** The Hub intelligently polls the Admin API of remote engines and multiplexes that data into the same WebSocket stream, ensuring consistent visibility across the entire fleet.
+
 ## Core Capabilities
 
-### 1. Centralized Stub Management
-The Hub provides a unified REST API and Web UI to manage stubs across your entire fleet. You can create, update, and delete mappings on any registered server without manually switching URLs or ports.
+### 1. Unified Dashboard
+The Dashboard provides a single pane of glass to configure any engine in the registry. By selecting an engine in the **Managed Engine** dropdown, the Hub automatically re-contexts all management commands (stubs, proxying, recording) to that specific instance.
 
 ### 2. Fleet Registry
-A persistent registry stored at `~/.wixy/servers.json` tracks all your managed instances. The Hub automatically includes the local embedded server on first boot, providing a zero-config experience.
+A persistent registry tracks all managed instances. The Hub automatically includes the local embedded server on first boot, providing a zero-config experience.
 
-### 3. Transparent Direct Targeting
-By using the `X-Wixy-Target-Server` header, CI/CD pipelines and automated tests can route commands to specific remote engines atomically, bypassing the global "Active Engine" context for high-concurrency orchestration.
-
-### 4. Per-Engine Proxying
-Each registered engine (local or remote) can have its own independent **Target Upstream URL**. This allows you to orchestrate a multi-service mock environment where different engines proxy to different backend microservices simultaneously.
+### 3. Live TUI Console
+A high-performance terminal interface (xterm.js) provides real-time traffic visibility with ANSI coloring, background persistence, and history search.

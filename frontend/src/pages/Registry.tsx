@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { registryApi, engineApi } from '../api';
 import type { ManagedServer } from '../types';
-import { Plus, Trash2, CheckCircle2, Globe, Cpu, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Globe, Cpu, RefreshCw, Settings, Terminal } from 'lucide-react';
 
 const Registry: React.FC = () => {
+  const navigate = useNavigate();
   const [servers, setServers] = useState<ManagedServer[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -28,7 +30,8 @@ const Registry: React.FC = () => {
         registryApi.getActive(),
       ]);
       setServers(serversRes.data);
-      setActiveId(activeRes.data.activeServerId === 'local' ? null : activeRes.data.activeServerId);
+      const activeServer = activeRes.data;
+      setActiveId(activeServer?.id || 'local');
       
       // Auto-check reachability for all servers
       serversRes.data.forEach((server: ManagedServer) => {
@@ -45,13 +48,33 @@ const Registry: React.FC = () => {
   }, [fetchData]);
 
   const handleSetActive = async (id: string | null) => {
+    const targetId = id === 'local' ? null : id;
+    const currentId = activeId === 'local' ? null : activeId;
+    
+    if (targetId === currentId) {
+      return true;
+    }
+
     try {
       await registryApi.setActive(id);
       setActiveId(id);
+      return true;
     } catch (err: unknown) {
       console.error('Failed to set active server', err);
-      alert('Failed to switch server');
+      // Only alert if it's a real failure to switch
+      alert('Failed to switch active engine. Make sure the target server is reachable.');
+      return false;
     }
+  };
+
+  const handleConfigure = async (id: string | null) => {
+    const success = await handleSetActive(id);
+    if (success) navigate('/dashboard');
+  };
+
+  const handleViewLogs = async (id: string | null) => {
+    const success = await handleSetActive(id);
+    if (success) navigate('/logs');
   };
 
   const handleAddServer = async (e: React.FormEvent) => {
@@ -126,11 +149,14 @@ const Registry: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {servers.map((server) => {
+          const id = server.id || 'local';
           const isActive = server.id === activeId || (server.type === 'INTERNAL' && activeId === null);
+          const isOffline = serverStatus[id] === 'offline';
+
           return (
             <div 
-              key={server.id || 'local'} 
-              className={`wixy-card relative overflow-hidden group ${isActive ? 'border-wixy-cyan ring-1 ring-wixy-cyan/50' : ''}`}
+              key={id} 
+              className={`wixy-card relative overflow-hidden group flex flex-col ${isActive ? 'border-wixy-cyan ring-1 ring-wixy-cyan/50' : ''}`}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-2 rounded-lg ${server.type === 'INTERNAL' ? 'bg-amber-500/10 text-amber-500' : 'bg-wixy-cyan/10 text-wixy-cyan'}`}>
@@ -149,37 +175,50 @@ const Registry: React.FC = () => {
               <h3 className="text-xl font-bold text-white mb-1">{server.name}</h3>
               <p className="text-gray-500 font-mono text-xs mb-6 truncate">{server.url}</p>
 
-              <div className="flex items-center justify-between mt-auto">
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                 <div className="flex items-center gap-2">
-                  {serverStatus[server.id || 'local'] === 'checking' ? (
+                  {serverStatus[id] === 'checking' ? (
                     <RefreshCw className="w-3 h-3 text-gray-500 animate-spin" />
                   ) : (
                     <div className={`w-2 h-2 rounded-full ${
-                      serverStatus[server.id || 'local'] === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
-                      serverStatus[server.id || 'local'] === 'offline' ? 'bg-red-500' : 'bg-gray-600'
+                      serverStatus[id] === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
+                      serverStatus[id] === 'offline' ? 'bg-red-500' : 'bg-gray-600'
                     }`} />
                   )}
                   <span className={`text-[10px] font-black uppercase tracking-tighter ${
-                    serverStatus[server.id || 'local'] === 'online' ? 'text-green-500' : 
-                    serverStatus[server.id || 'local'] === 'offline' ? 'text-red-500' : 'text-gray-500'
+                    serverStatus[id] === 'online' ? 'text-green-500' : 
+                    serverStatus[id] === 'offline' ? 'text-red-500' : 'text-gray-500'
                   }`}>
-                    {serverStatus[server.id || 'local'] === 'online' ? 'Online' : 
-                     serverStatus[server.id || 'local'] === 'offline' ? 'Unreachable' : 
-                     serverStatus[server.id || 'local'] === 'checking' ? 'Checking...' : 'Standby'}
+                    {serverStatus[id] === 'online' ? 'Online' : 
+                     serverStatus[id] === 'offline' ? 'Unreachable' : 
+                     serverStatus[id] === 'checking' ? 'Checking...' : 'Standby'}
                   </span>
                 </div>
                 
-                {!isActive && (
+                <div className="flex gap-4">
                   <button 
-                    disabled={serverStatus[server.id || 'local'] === 'offline'}
-                    onClick={() => handleSetActive(server.id)}
-                    className={`text-xs font-bold uppercase tracking-widest transition-colors ${
-                      serverStatus[server.id || 'local'] === 'offline' ? 'text-gray-700 cursor-not-allowed' : 'text-wixy-cyan hover:text-cyan-300'
+                    disabled={isOffline}
+                    onClick={() => handleConfigure(server.id)}
+                    className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      isOffline ? 'text-gray-700 cursor-not-allowed' : 'text-wixy-cyan hover:text-cyan-300'
                     }`}
+                    title="Configure Engine"
                   >
-                    Switch To →
+                    <Settings className="w-3.5 h-3.5" />
+                    Config
                   </button>
-                )}
+                  <button 
+                    disabled={isOffline}
+                    onClick={() => handleViewLogs(server.id)}
+                    className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+                      isOffline ? 'text-gray-700 cursor-not-allowed' : 'text-wixy-cyan hover:text-cyan-300'
+                    }`}
+                    title="View Logs"
+                  >
+                    <Terminal className="w-3.5 h-3.5" />
+                    Logs
+                  </button>
+                </div>
               </div>
               
               {isActive && (

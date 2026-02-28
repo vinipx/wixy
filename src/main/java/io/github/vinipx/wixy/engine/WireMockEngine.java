@@ -74,6 +74,11 @@ public interface WireMockEngine {
     int getPort();
 
     /**
+     * Get recent serve events (the Journal).
+     */
+    List<com.github.tomakehurst.wiremock.stubbing.ServeEvent> listServeEvents();
+
+    /**
      * Simple lightweight call to verify the engine is reachable.
      */
     void ping();

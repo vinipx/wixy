@@ -56,9 +56,8 @@ public class RegistryController {
     }
 
     @GetMapping("/active")
-    @Operation(summary = "Get the ID of the currently active server")
-    public Map<String, Object> getActive() {
-        UUID activeId = registryService.getActiveServerId();
-        return Map.of("activeServerId", activeId == null ? "local" : activeId);
+    @Operation(summary = "Get the details of the currently active server")
+    public ManagedServer getActive() {
+        return registryService.getActiveServer();
     }
 }
