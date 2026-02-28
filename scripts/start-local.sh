@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -48,11 +48,14 @@ if [ "$TOTAL_ENGINES" -gt 1 ]; then
         WM_PORT=$((9090 + i))
         echo "   🚀 Remote Engine $i starting on admin port $ADMIN_PORT, wiremock port $WM_PORT"
         
+        # Start remote engines with catch-all proxy enabled by default for demo purposes
         java -jar build/libs/wixy-*.jar \
             --spring.profiles.active=local \
             --server.port=$ADMIN_PORT \
             --wixy.wiremock.port=$WM_PORT \
             --wixy.ui.enabled=false \
+            --wixy.proxy.enabled=true \
+            --wixy.proxy.target-url=https://jsonplaceholder.typicode.com \
             > "build/remote-engine-$i.log" 2>&1 &
         PIDS+=($!)
     done
@@ -66,11 +69,11 @@ if [ "$TOTAL_ENGINES" -gt 1 ]; then
             if curl -s http://localhost:8080/actuator/health > /dev/null; then
                 echo "✅ Hub is ready. Registering remote engines..."
                 for i in $(seq 1 $((TOTAL_ENGINES - 1))); do
-                    WM_PORT=$((9090 + i))
+                    ADMIN_PORT=$((8080 + i))
                     curl -s -X POST http://localhost:8080/wixy/admin/registry/servers \
                         -H "Content-Type: application/json" \
-                        -d "{\"name\":\"Remote-$i\",\"url\":\"http://localhost:$WM_PORT\"}" > /dev/null
-                    echo "   📡 Auto-registered Remote-$i (http://localhost:$WM_PORT)"
+                        -d "{\"name\":\"Remote-$i\",\"url\":\"http://localhost:$ADMIN_PORT\"}" > /dev/null
+                    echo "   📡 Auto-registered Remote-$i (Admin Port: $ADMIN_PORT)"
                 done
                 break
             fi

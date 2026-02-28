@@ -127,4 +127,15 @@ public class ServerRegistryService {
     public UUID getActiveServerId() {
         return engineManager.getActiveServerId();
     }
+
+    public ManagedServer getActiveServer() {
+        UUID activeId = getActiveServerId();
+        if (activeId == null) {
+            return servers.stream()
+                    .filter(s -> s.getType() == ManagedServer.ServerType.INTERNAL)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return getById(activeId).orElse(null);
+    }
 }

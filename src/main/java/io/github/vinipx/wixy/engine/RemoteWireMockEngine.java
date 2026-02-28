@@ -137,6 +137,11 @@ public class RemoteWireMockEngine implements WireMockEngine {
     }
 
     @Override
+    public List<com.github.tomakehurst.wiremock.stubbing.ServeEvent> listServeEvents() {
+        return client.getServeEvents();
+    }
+
+    @Override
     public void ping() {
         // A simple lightweight call to verify connection
         try {

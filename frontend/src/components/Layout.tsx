@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Server, Activity, Github } from 'lucide-react';
+import { Server, Activity, Github, Terminal } from 'lucide-react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -8,6 +8,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navItems = [
     { name: 'Registry', path: '/', icon: Server },
     { name: 'Dashboard', path: '/dashboard', icon: Activity },
+    { name: 'Logs', path: '/logs', icon: Terminal },
   ];
 
   return (

@@ -22,7 +22,7 @@ export const registryApi = {
   addServer: (server: Partial<ManagedServer>, config?: AxiosRequestConfig) => api.post<ManagedServer>('/wixy/admin/registry/servers', server, config),
   removeServer: (id: string, config?: AxiosRequestConfig) => api.delete(`/wixy/admin/registry/servers/${id}`, config),
   setActive: (id: string | null, config?: AxiosRequestConfig) => api.post<{ status: string; activeServerId: string }>('/wixy/admin/registry/active', { id: id === 'local' ? null : id }, config),
-  getActive: (config?: AxiosRequestConfig) => api.get<{ activeServerId: string }>('/wixy/admin/registry/active', config),
+  getActive: (config?: AxiosRequestConfig) => api.get<ManagedServer>('/wixy/admin/registry/active', config),
 };
 
 export const engineApi = {

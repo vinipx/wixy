@@ -88,6 +88,11 @@ public class LocalWireMockEngine implements WireMockEngine {
     }
 
     @Override
+    public List<com.github.tomakehurst.wiremock.stubbing.ServeEvent> listServeEvents() {
+        return wireMockServer.getServeEvents().getServeEvents();
+    }
+
+    @Override
     public void ping() {
         if (!wireMockServer.isRunning()) {
             throw new IllegalStateException("Local WireMock server is not running");

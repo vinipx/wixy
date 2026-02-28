@@ -1,75 +1,44 @@
 ---
-sidebar_position: 1
-title: Hub & Registry
+sidebar_position: 2
+title: Hub Registry
 ---
 
-# WIXY Hub & Registry
+# Fleet Registry
 
-WIXY Hub transforms a single proxy utility into a powerful **control plane** for your entire WireMock infrastructure. It allows you to register multiple environments and orchestrate them from a single interface.
+The Registry is the central database of all WireMock engines managed by the Hub. It allows you to organize, monitor, and quickly access every environment in your fleet.
 
-## Core Concepts
+## Overview
 
-### The Registry
-The Registry is a persistent list of "Managed Servers". Each entry consists of:
-- **Name**: A human-readable identifier (e.g., "Staging API").
-- **URL**: The base URL of the WireMock Admin API.
-- **Type**: Either `INTERNAL` (the embedded engine) or `REMOTE`.
+A "Server" in WIXY can be either:
+- **Internal (Embedded):** The WireMock instance running inside the Hub process (default: port 9090).
+- **Remote:** Any external WireMock instance accessible via HTTP (Docker containers, staging servers, standalone JARs).
 
-The registry is stored in a JSON file (default: `~/.wixy/servers.json`) and survives application restarts.
+## Server Cards
 
-### The Active Engine
-At any given time, the Hub has one **Active Engine**. 
-- All standard REST API calls to `/wixy/admin/mappings` are routed to this engine.
-- All MCP tool calls from AI agents are routed to this engine.
-- The **Management UI** focuses on this engine for live monitoring and control.
+Each engine in the registry is represented by a card showing:
+- **Engine Name:** User-defined label for the environment.
+- **Admin URL:** The technical endpoint used by the Hub to manage stubs and proxying.
+- **Connectivity Status:** A real-time indicator (Online/Unreachable) showing if the Hub can talk to the engine.
+- **Type Icon:** Distinguishes between the local CPU icon (Internal) and the Globe icon (Remote).
 
-## Direct Targeting (Advanced)
+## Actions
 
-WIXY Hub supports **Direct Targeting**, allowing you to bypass the current global context for a single request. This is ideal for automated scripts or cross-environment synchronization.
+### 1. Config
+Clicking **Config** makes that engine the "Active Engine" for the Hub and routes you directly to the **Dashboard**. From there, you can:
+- Enable/Disable proxying for that specific engine.
+- Manage its stub mappings.
+- Start or stop traffic recording.
 
-### Using the Header
-Include the `X-Wixy-Target-Server` header in any management request:
+### 2. Logs
+Clicking **Logs** makes that engine the "Active Engine" and routes you to the **Live Logs** tab, automatically subscribing you to its real-time traffic stream.
 
-```bash
-# Get mappings from a specific remote server (using its UUID)
-curl http://localhost:8080/wixy/admin/mappings 
-  -H "X-Wixy-Target-Server: a1b2c3d4-e5f6..."
+### 3. Management
+- **Add Remote Server:** Use the "+" button to register a new external WireMock instance by providing its name and base URL.
+- **Delete:** Remove a remote engine from your registry (internal local engines cannot be deleted).
 
-# Create a stub on the LOCAL engine regardless of Hub context
-curl -X POST http://localhost:8080/wixy/admin/mappings 
-  -H "X-Wixy-Target-Server: local" 
-  -d '{...}'
-```
+## Persistence
 
-| Header Value | Routing Behavior |
-|--------------|------------------|
-| `local`      | Routes to the embedded Port 9090 engine. |
-| `<UUID>`     | Routes to the registered remote server with that ID. |
-| (missing)    | Routes to the current **Active Engine**. |
+The registry is persistent. By default, it is saved to your local user directory:
+`${user.home}/.wixy/servers.json`
 
-## Dashboard Operations
-
-The modern Web UI provides two primary views for Hub management:
-
-### 1. Server Registry View
-- **Status Monitoring**: Live "Pulse" indicators for every registered server.
-- **Context Switching**: One-click "Switch To" button to change the Hub's focus.
-- **Management**: Add, edit, or remove remote servers from your fleet.
-
-### 2. Engine Control View
-- **Stub Manager**: A real-time data grid of all active mappings on the target server.
-- **Live Controls**: Toggle Proxy Mode or Traffic Recording on the fly.
-- **Engine Metrics**: Quick visibility into port status and stub counts.
-
-## Configuration
-
-You can customize the Registry behavior in `application.yml`:
-
-```yaml
-wixy:
-  registry:
-    persistence: file # Currently supports 'file'
-    file-path: ${user.home}/.wixy/servers.json
-  ui:
-    enabled: true # Toggle the dashboard
-```
+This ensures that your fleet configuration remains intact even after restarting the Hub or updating the application.

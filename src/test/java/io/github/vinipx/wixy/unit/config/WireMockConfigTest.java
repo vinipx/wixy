@@ -34,7 +34,7 @@ class WireMockConfigTest {
         @Test
         @DisplayName("should start WireMock on PostConstruct and stop on PreDestroy")
         void startAndStop() {
-            var config = new WireMockConfig(defaultProperties());
+            var config = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
 
             WireMockServer server = config.wireMockServer();
@@ -49,7 +49,7 @@ class WireMockConfigTest {
         @Test
         @DisplayName("stop should be idempotent when server already stopped")
         void stopIdempotent() {
-            var config = new WireMockConfig(defaultProperties());
+            var config = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             config.stop();
 
@@ -60,7 +60,7 @@ class WireMockConfigTest {
         @Test
         @DisplayName("getActualPort should return -1 before start")
         void portBeforeStart() {
-            var config = new WireMockConfig(defaultProperties());
+            var config = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             assertThat(config.getActualPort()).isEqualTo(-1);
         }
     }
@@ -74,7 +74,7 @@ class WireMockConfigTest {
         @Test
         @DisplayName("should allocate random port when configured as 0")
         void randomPort() {
-            var config = new WireMockConfig(defaultProperties());
+            var config = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 assertThat(config.getActualPort()).isGreaterThan(0);
@@ -87,8 +87,8 @@ class WireMockConfigTest {
         @Test
         @DisplayName("two instances should get different random ports")
         void differentRandomPorts() {
-            var config1 = new WireMockConfig(defaultProperties());
-            var config2 = new WireMockConfig(defaultProperties());
+            var config1 = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
+            var config2 = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config1.start();
             config2.start();
             try {
@@ -111,7 +111,7 @@ class WireMockConfigTest {
         void verboseEnabled() {
             var props = defaultProperties();
             props.getWiremock().setVerbose(true);
-            var config = new WireMockConfig(props);
+            var config = new WireMockConfig(props, org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 assertThat(config.wireMockServer().isRunning()).isTrue();
@@ -125,7 +125,7 @@ class WireMockConfigTest {
         void verboseDisabled() {
             var props = defaultProperties();
             props.getWiremock().setVerbose(false);
-            var config = new WireMockConfig(props);
+            var config = new WireMockConfig(props, org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 assertThat(config.wireMockServer().isRunning()).isTrue();
@@ -146,7 +146,7 @@ class WireMockConfigTest {
         void proxyDisabled() {
             var props = defaultProperties();
             props.getProxy().setEnabled(false);
-            var config = new WireMockConfig(props);
+            var config = new WireMockConfig(props, org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 // No catch-all proxy stub should be added
@@ -163,7 +163,7 @@ class WireMockConfigTest {
             props.getProxy().setEnabled(true);
             props.getProxy().setTargetUrl("http://httpbin.org");
             props.getProxy().setRecord(false);
-            var config = new WireMockConfig(props);
+            var config = new WireMockConfig(props, org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 // Should have exactly one catch-all proxy mapping
@@ -179,7 +179,7 @@ class WireMockConfigTest {
             var props = defaultProperties();
             props.getProxy().setEnabled(true);
             props.getProxy().setTargetUrl("");
-            var config = new WireMockConfig(props);
+            var config = new WireMockConfig(props, org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 assertThat(config.wireMockServer().getStubMappings()).isEmpty();
@@ -198,7 +198,7 @@ class WireMockConfigTest {
         @Test
         @DisplayName("wireMockServer() bean should return the same running instance")
         void beanIdentity() {
-            var config = new WireMockConfig(defaultProperties());
+            var config = new WireMockConfig(defaultProperties(), org.mockito.Mockito.mock(io.github.vinipx.wixy.websocket.LogWebSocketHandler.class));
             config.start();
             try {
                 WireMockServer bean = config.wireMockServer();
