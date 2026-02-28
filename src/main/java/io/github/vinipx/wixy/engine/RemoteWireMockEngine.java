@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.recording.RecordSpecBuilder;
 import com.github.tomakehurst.wiremock.recording.RecordingStatus;
 import com.github.tomakehurst.wiremock.recording.SnapshotRecordResult;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
+import io.github.vinipx.wixy.exception.WixyException;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +26,11 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public List<StubMapping> listAllStubs() {
-        return client.allStubMappings().getMappings();
+        try {
+            return client.allStubMappings().getMappings();
+        } catch (Exception e) {
+            throw new WixyException("Failed to list stubs. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -39,55 +44,91 @@ public class RemoteWireMockEngine implements WireMockEngine {
 
     @Override
     public void addStubMapping(StubMapping mapping) {
-        client.register(mapping);
+        try {
+            client.register(mapping);
+        } catch (Exception e) {
+            throw new WixyException("Failed to add stub. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void editStubMapping(StubMapping mapping) {
-        if (mapping.getId() != null) {
-            client.removeStubMapping(mapping.getId());
+        try {
+            if (mapping.getId() != null) {
+                client.removeStubMapping(mapping.getId());
+            }
+            client.register(mapping);
+        } catch (Exception e) {
+            throw new WixyException("Failed to edit stub. Remote engine might be unreachable: " + e.getMessage(), e);
         }
-        client.register(mapping);
     }
 
     @Override
     public void removeStubMapping(StubMapping mapping) {
-        client.removeStubMapping(mapping);
+        try {
+            client.removeStubMapping(mapping);
+        } catch (Exception e) {
+            throw new WixyException("Failed to remove stub. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void resetStubs() {
-        client.resetMappings();
+        try {
+            client.resetMappings();
+        } catch (Exception e) {
+            throw new WixyException("Failed to reset stubs. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void resetToDefaultMappings() {
-        client.resetToDefaultMappings();
+        try {
+            client.resetToDefaultMappings();
+        } catch (Exception e) {
+            throw new WixyException("Failed to reset to default mappings. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void stubFor(MappingBuilder mappingBuilder) {
-        client.register(mappingBuilder);
+        try {
+            client.register(mappingBuilder);
+        } catch (Exception e) {
+            throw new WixyException("Failed to register stub. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void startRecording(String targetUrl) {
-        client.startStubRecording(
-                new RecordSpecBuilder()
-                        .forTarget(targetUrl)
-                        .ignoreRepeatRequests()
-                        .makeStubsPersistent(true)
-        );
+        try {
+            client.startStubRecording(
+                    new RecordSpecBuilder()
+                            .forTarget(targetUrl)
+                            .ignoreRepeatRequests()
+                            .makeStubsPersistent(true)
+            );
+        } catch (Exception e) {
+            throw new WixyException("Failed to start recording. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public SnapshotRecordResult stopRecording() {
-        return client.stopStubRecording();
+        try {
+            return client.stopStubRecording();
+        } catch (Exception e) {
+            throw new WixyException("Failed to stop recording. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public RecordingStatus getRecordingStatus() {
-        return client.getStubRecordingStatus().getStatus();
+        try {
+            return client.getStubRecordingStatus().getStatus();
+        } catch (Exception e) {
+            throw new WixyException("Failed to get recording status. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -98,6 +139,10 @@ public class RemoteWireMockEngine implements WireMockEngine {
     @Override
     public void ping() {
         // A simple lightweight call to verify connection
-        client.allStubMappings();
+        try {
+            client.allStubMappings();
+        } catch (Exception e) {
+            throw new WixyException("Failed to ping. Remote engine might be unreachable: " + e.getMessage(), e);
+        }
     }
 }
