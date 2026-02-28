@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Neutral dark background -->
+  <rect width="48" height="48" rx="10" fill="#18181b"/>
+  
+  <!-- Active Chameleon Silhouette (Walking/Active Pose) -->
+  <path d="M8 32C8 32 7 28 10 25C13 22 16 22 18 23
+           C20 19 24 15 30 15C36 15 40 19 41 24
+           C42 28 41 33 38 35C35 37 30 36 28 34
+           C26 34 24 35 20 35C16 35 12 34 8 32Z" fill="#06b6d4"/>
+  
+  <!-- Leg Details (Minimalist) -->
+  <path d="M18 35L16 39" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M32 35L34 39" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Head & Eye -->
+  <circle cx="36" cy="22" r="2" fill="#18181b"/>
+  
+  <!-- Tail detail -->
+  <path d="M8 32C6 32 4 30 4 27C4 24 6 22 8 22" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+</svg>
